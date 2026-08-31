@@ -1,0 +1,2139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project & Timesheet Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --blue:#1a1a2e;--blue2:#2d2d4e;--blue3:#4a4a8a;--blue-lt:#eeeef8;
+  --gold:#c9a84c;--gold-lt:#fef9ec;--gold2:#e8c96a;
+  --green:#0a5c36;--green-lt:#e8f8f0;
+  --red:#8b1a1a;--red-lt:#fdf2f2;
+  --amber:#7a4f00;--amber-lt:#fef8e8;
+  --gray:#2d2d4e;--border:#dddde8;--muted:#7070a0;--sw:250px;
+  --cream:#faf8f5;--surface:#ffffff;
+}
+body{font-family:"Palatino Linotype","Palatino","Book Antiqua",Palatino,serif;background:#f0f0f5;color:#1a1a2e;display:flex;min-height:100vh}
+input,select,textarea,button{font-family:inherit}
+.sidebar{width:var(--sw);background:linear-gradient(180deg,#1a1a2e 0%,#12122a 100%);min-height:100vh;position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;border-right:1px solid rgba(201,168,76,0.15)}
+.s-logo{padding:22px 18px 18px;border-bottom:1px solid rgba(201,168,76,0.15);background:rgba(201,168,76,0.04)}
+.s-co{font-size:11px;font-weight:600;color:rgba(201,168,76,0.6);letter-spacing:0.15em;margin-bottom:5px;font-family:"Palatino Linotype",serif}
+.s-name{font-size:14px;font-weight:600;color:#fff;line-height:1.3;font-family:"Palatino Linotype",serif}
+.s-name span{color:var(--gold)}
+.nav{padding:10px 0}
+.ni{display:flex;align-items:center;gap:11px;padding:10px 18px;font-size:12.5px;color:rgba(255,255,255,0.55);cursor:pointer;border-left:3px solid transparent;transition:all 0.2s;user-select:none;letter-spacing:0.01em}
+.ni:hover{color:rgba(255,255,255,0.9);background:rgba(201,168,76,0.08)}
+.ni.on{color:#fff;background:rgba(201,168,76,0.12);border-left-color:var(--gold);font-weight:600}
+.ni span:first-child{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.ni .nb{margin-left:auto;background:var(--gold);color:var(--blue);font-size:10px;font-weight:700;padding:1px 7px;border-radius:20px}
+.s-foot{margin-top:auto;border-top:1px solid rgba(201,168,76,0.12)}
+.s-user{display:flex;align-items:center;gap:10px;padding:12px 18px}
+.s-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue);font-size:13px;flex-shrink:0}
+.s-un{font-size:12.5px;font-weight:600;color:#fff}
+.s-ur{font-size:10px;color:rgba(255,255,255,0.4);margin-top:1px}
+.s-lo{background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;margin-left:auto;font-size:14px;padding:4px;transition:color 0.15s}
+.s-lo:hover{color:var(--gold)}
+.s-powered{padding:8px 18px 14px;text-align:center;font-size:10px;color:rgba(201,168,76,0.5);letter-spacing:0.05em;font-family:"Palatino Linotype",serif;font-style:italic;border-top:1px solid rgba(201,168,76,0.08)}
+.s-powered span{color:rgba(201,168,76,0.8);font-weight:600}
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);height:58px;display:flex;align-items:center;padding:0 28px;position:sticky;top:0;z-index:50;gap:12px;box-shadow:0 1px 8px rgba(26,26,46,0.06)}
+.topbar h1{font-size:19px;font-weight:600;color:var(--blue);flex:1;font-family:"Palatino Linotype",serif;letter-spacing:0.02em}
+.rtag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.rt-EMPLOYEE{background:#dbeafe;color:#1e40af}.rt-MANAGER{background:#d1fae5;color:#065f46}
+.rt-BU_HEAD{background:#fef3c7;color:#92400e}.rt-ADMIN{background:#fee2e2;color:#991b1b}.rt-MANAGEMENT{background:#ede9fe;color:#5b21b6}
+.rt-FINANCE{background:#dcfce7;color:#166534}.rt-HR{background:#e0e7ff;color:#3730a3}
+.pane{display:none;padding:24px 28px}
+.pane.on{display:block}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:22px}
+.sc{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid var(--border);transition:transform 0.2s,box-shadow 0.2s}
+.sc:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,26,46,0.08)}
+.sl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px;font-family:"Palatino Linotype",serif}
+.sv{font-size:26px;font-weight:700;color:var(--blue);line-height:1;font-family:"Palatino Linotype",serif}
+.sv.green{color:var(--green)}.sv.red{color:var(--red)}.sv.amber{color:var(--amber)}
+.tc{background:#fff;border-radius:10px;border:1px solid var(--border);overflow:hidden;margin-bottom:18px}
+.th2{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.th2-title{font-size:15px;font-weight:600;color:var(--blue);font-family:"Palatino Linotype",serif;letter-spacing:0.01em}
+.tb{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.srch{padding:7px 11px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;outline:none;min-width:160px;background:#f9fafb}
+.fsel{padding:7px 32px 7px 11px;border:1px solid var(--border);border-radius:7px;font-family:inherit;font-size:13px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%231a1a2e' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;outline:none;cursor:pointer;appearance:none}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{padding:9px 13px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);background:#f4f4f8;border-bottom:1px solid var(--border);white-space:nowrap;font-family:"Palatino Linotype",serif}
+td{padding:11px 13px;font-size:13px;border-bottom:1px solid #f3f4f6;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafafa}
+.amt{font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.b-pending{background:#fef9ec;color:#92400e}.b-approved{background:#ecfdf5;color:#065f46}.b-rejected{background:#fee2e2;color:#991b1b}
+.b-active{background:#d1fae5;color:#065f46}.b-draft{background:#eeeef8;color:#4a4a8a}.b-closed{background:#ede9fe;color:#5b21b6}.b-hold{background:#fef8e8;color:#7a4f00}
+.b-yettostart{background:#e0e7ff;color:#3730a3}.b-completed{background:#d1fae5;color:#065f46}.b-dropped{background:#fee2e2;color:#991b1b}
+.b-notraised{background:#eeeef8;color:#4a4a8a}.b-raised{background:#fef3c7;color:#92400e}.b-received{background:#d1fae5;color:#065f46}
+.btn{padding:5px 11px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:#374151;font-family:inherit;transition:all 0.15s;margin-right:3px}
+.btn:hover{border-color:var(--blue3);background:var(--blue-lt);color:var(--blue)}
+.btn-ok{border-color:#6ee7b7;color:var(--green);background:var(--green-lt)}
+.btn-ok:hover{background:#d1fae5}
+.btn-no{border-color:#fca5a5;color:var(--red);background:var(--red-lt)}
+.btn-no:hover{background:#fee2e2}
+.bpri{background:linear-gradient(135deg,#1a1a2e,#2d2d4e);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:"Palatino Linotype",serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 8px rgba(26,26,46,0.2)}
+.bpri:hover{background:linear-gradient(135deg,#2d2d4e,#3d3d6e);transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,26,46,0.3)}
+.bpri:disabled{opacity:0.6;cursor:default;transform:none}
+.bsec{background:#fff;color:var(--blue);border:1.5px solid var(--blue3);border-radius:8px;padding:9px 18px;font-family:"Palatino Linotype",serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.bsec:hover{background:var(--blue-lt);transform:translateY(-1px)}
+.ghost{background:none;border:1px solid var(--border);border-radius:7px;padding:6px 13px;font-family:inherit;font-size:12px;color:var(--gray);cursor:pointer}
+.ghost:hover{border-color:var(--blue3);color:var(--blue)}
+.empty{padding:48px;text-align:center;color:var(--muted);font-size:13px}
+.fg{display:grid;gap:14px}.fg2{grid-template-columns:1fr 1fr}.fg3{grid-template-columns:1fr 1fr 1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:#374151}
+.req{color:var(--gold)}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;color:#111;background:#fff;outline:none;transition:border-color 0.2s;appearance:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue3)}
+.fcard{background:#fff;border-radius:10px;border:1px solid var(--border);margin-bottom:14px;overflow:hidden}
+.fc-hdr{padding:13px 18px;border-bottom:1px solid var(--border)}
+.fc-title{font-size:14px;font-weight:600;color:var(--blue)}
+.fc-body{padding:16px 18px}
+.sub-bar{background:#fff;border-top:1px solid var(--border);padding:12px 28px;display:flex;gap:10px;justify-content:flex-end;position:sticky;bottom:0}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:14px;width:560px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.mhdr{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-size:17px;font-weight:600;color:var(--blue);font-family:"Palatino Linotype",serif;letter-spacing:0.01em}
+.mcls{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer}
+.mbdy{padding:16px 24px}
+.mft{padding:12px 24px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.tab-bar{display:flex;gap:3px;background:#f0f4f8;border-radius:8px;padding:3px;width:fit-content;margin-bottom:16px}
+.tbb{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:inherit}
+.tbb.on{background:#fff;color:var(--blue);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.toast{position:fixed;bottom:20px;right:20px;padding:11px 16px;border-radius:9px;font-size:13px;font-family:inherit;z-index:999;opacity:0;transform:translateY(12px);transition:all 0.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:translateY(0)}
+.t-ok{background:#065f46;color:#fff}.t-err{background:#991b1b;color:#fff}.t-info{background:var(--blue);color:#fff}
+.prog{height:6px;background:#eee;border-radius:4px;overflow:hidden;margin-top:4px}
+.prog i{display:block;height:100%;background:var(--blue3)}
+.prog i.over{background:var(--red)}
+@media(max-width:860px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar">
+<div class="s-logo"><div class="s-co" id="sCo">PROJECT MGMT</div><div class="s-name" id="sCoName">Your <span>Company</span></div></div>
+<nav class="nav" id="sideNav"></nav>
+<div class="s-foot"><div class="s-powered">Powered by <span>CA. Jagan A.</span></div><div class="s-user"><div class="s-av" id="sAv">U</div><div style="min-width:0"><div class="s-un" id="sNm">User</div><div class="s-ur" id="sRl">-</div></div><button class="s-lo" id="loBtn" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button></div></div>
+</aside>
+<main class="main">
+<header class="topbar"><h1 id="topTitle">Dashboard</h1><span class="rtag" id="rtag">-</span></header>
+
+<!-- ===== DASHBOARD ===== -->
+<div class="pane on" id="pane-dashboard">
+  <div style="font-size:20px;font-weight:700;color:var(--blue);margin-bottom:18px" id="dashTitle">Dashboard</div>
+  <div class="sg" id="dashStats"></div>
+  <div id="dashExtra"></div>
+</div>
+
+<!-- ===== LOG TIME (Employee) ===== -->
+<div class="pane" id="pane-log-time">
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">📅 Which day?</div></div><div class="fc-body">
+    <div class="fg fg3">
+      <div class="field"><label>Date <span class="req">*</span></label><input type="date" id="ltDate" onchange="ltLoadDay()"></div>
+    </div>
+  </div></div>
+
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">🗂️ Projects</div></div><div class="fc-body">
+    <div id="ltProjectRows"><div class="empty">Pick a date above to see your active projects.</div></div>
+    <button class="ghost" id="ltAddProjRowBtn" style="display:none;margin-top:8px" onclick="ltAddProjectRow()">+ Add another project for this day</button>
+  </div></div>
+
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">🕐 Other Activities</div></div><div class="fc-body">
+    <div id="ltActivityRows"></div>
+    <button class="ghost" onclick="ltAddActivityRow()">+ Add activity (meeting, holiday, team outing...)</button>
+  </div></div>
+
+  <div class="sub-bar"><button class="bpri" onclick="submitDay()">Submit Day</button></div>
+</div>
+
+<!-- ===== MY TIMESHEET (Employee) ===== -->
+<div class="pane" id="pane-my-timesheet">
+  <div class="tc"><div class="th2"><div class="th2-title">My Timesheet Entries</div><div class="tb"><input type="date" id="mtDate" onchange="loadMyTimesheets()"><button class="ghost" onclick="document.getElementById('mtDate').value='';loadMyTimesheets()">All Dates</button><button class="ghost" onclick="loadMyTimesheets()">Refresh</button></div></div>
+  <div class="sg" id="mtStats" style="margin:14px 18px 0"></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Project / Activity</th><th>Task</th><th>Hours</th><th>Description</th><th>Status</th></tr></thead><tbody id="mtBody"><tr><td colspan="6"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== APPROVALS (Manager / BU Head / Admin) ===== -->
+<div class="pane" id="pane-approvals">
+  <div class="tc"><div class="th2"><div class="th2-title" id="apTitle">Pending Approvals</div><div class="tb"><input type="date" id="apDate" onchange="loadApprovals()"><button class="ghost" onclick="document.getElementById('apDate').value='';loadApprovals()">All Dates</button></div></div>
+  <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <div class="tab-bar"><button class="tbb on" id="apt1" onclick="apTab('PENDING')">Pending</button><button class="tbb" id="apt2" onclick="apTab('')">All</button></div>
+    <div id="apBulkBar" style="display:none">
+      <button class="btn btn-ok" onclick="bulkDecide('approve')">Approve Selected</button>
+      <button class="btn btn-no" onclick="bulkDecide('reject')">Reject Selected</button>
+    </div>
+  </div>
+  <div class="tw"><table><thead><tr><th><input type="checkbox" id="apSelectAll" onchange="apToggleAll(this)"></th><th>Employee</th><th>Date</th><th>Project / Activity</th><th>Task</th><th>Hours</th><th>Description</th><th>Status</th><th>Actions</th></tr></thead><tbody id="apBody"><tr><td colspan="9"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== COST DETAILS (Manager adds / BU Head approves) ===== -->
+<div class="pane" id="pane-cost-details">
+  <div class="tc"><div class="th2"><div class="th2-title">Cost Details</div><div class="tb"><select class="fsel" id="cdProjSel" onchange="loadCostEntries()"></select><button class="bpri" onclick="openCostModal()">+ Add Cost</button></div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Entered By</th><th>Status</th><th>Actions</th></tr></thead><tbody id="cdBody"><tr><td colspan="7"><div class="empty">Select a project above</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== INVOICING (Finance / Admin) ===== -->
+<div class="pane" id="pane-invoicing">
+  <div class="tc"><div class="th2"><div class="th2-title">Invoicing Schedule</div><div class="tb"><button class="bpri" onclick="openLogInvoiceModal()">+ Log Invoice</button></div></div>
+  <div style="padding:14px 18px"><div class="tab-bar" id="invFilterBar">
+    <button class="tbb on" onclick="invSetFilter('all',this)">All</button>
+    <button class="tbb" onclick="invSetFilter('week',this)">Due This Week</button>
+    <button class="tbb" onclick="invSetFilter('month',this)">Due This Month</button>
+    <button class="tbb" onclick="invSetFilter('quarter',this)">Due This Quarter</button>
+  </div></div>
+  <div class="tw"><table><thead><tr><th>Project</th><th>Sched. Date</th><th>Plan Amount</th><th>Payment Terms</th><th>Status</th><th>Invoice No.</th><th>Actual Amount</th><th>Received</th><th>Actions</th></tr></thead><tbody id="invBody2"><tr><td colspan="9"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== APPROVED PROJECT COSTS (Finance, read-only) ===== -->
+<div class="pane" id="pane-approved-costs">
+  <div class="tc"><div class="th2"><div class="th2-title">BU-Approved Project Costs</div><div class="tb"><button class="ghost" onclick="loadApprovedCostsFinance()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Project</th><th>Date</th><th>Category</th><th>Amount</th><th>Entered By</th></tr></thead><tbody id="acBody"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== PAYROLL MASTER (HR / Admin) ===== -->
+<div class="pane" id="pane-payroll-master">
+  <div class="tc"><div class="th2"><div class="th2-title">Payroll Master</div><div class="tb"><button class="bpri" onclick="openPayrollMasterModal()">+ Add / Update</button><button class="ghost" onclick="loadPayrollMaster()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Employee</th><th>Monthly CTC</th><th>Effective From</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="pmBody"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== MONTHLY PAY (HR / Admin) ===== -->
+<div class="pane" id="pane-payroll-entries">
+  <div class="tc"><div class="th2"><div class="th2-title">Monthly Pay</div><div class="tb"><input type="month" id="peMonth" onchange="loadPayrollEntries()"><button class="bpri" onclick="openPayrollEntryModal()">+ Log Pay</button></div></div>
+  <div class="tw"><table><thead><tr><th>Employee</th><th>Month</th><th>Basic Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th></tr></thead><tbody id="peBody"><tr><td colspan="6"><div class="empty">Select a month above</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== PROJECTS (Admin / BU Head) ===== -->
+<div class="pane" id="pane-projects">
+  <div class="tc"><div class="th2"><div class="th2-title">Projects</div><div class="tb"><button class="bpri" id="newProjBtn" style="display:none" onclick="openProjForm()">+ New Project</button><button class="ghost" onclick="loadProjects()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Project</th><th>Customer</th><th>BU</th><th>Managers</th><th>Status</th><th>Budget Revenue</th><th>Budget Cost</th><th>Actions</th></tr></thead><tbody id="prjBody"><tr><td colspan="8"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== PROJECT FORM (Add / Edit — Admin / BU Head) ===== -->
+<div class="pane" id="pane-project-form">
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">📋 Basic Details</div></div><div class="fc-body">
+    <div class="fg fg3">
+      <div class="field"><label>Project ID <span class="req">*</span></label><input id="pfProjectID" placeholder="e.g. PRJ-2026-01"></div>
+      <div class="field sp2"><label>Project Name <span class="req">*</span></label><input id="pfProjectName"></div>
+    </div>
+    <div class="fg fg3" style="margin-top:14px">
+      <div class="field"><label>Customer</label><input id="pfCustomer"></div>
+      <div class="field"><label>Business Unit</label><select id="pfBU" onchange="onBUOptionChange(this)"></select></div>
+      <div class="field"><label>Status</label><select id="pfStatus"><option value="YET_TO_START">Yet to Start</option><option value="ACTIVE">Active</option><option value="HOLD">Hold</option><option value="COMPLETED">Completed</option><option value="DROPPED">Dropped</option></select></div>
+    </div>
+    <div class="fg fg3" style="margin-top:14px">
+      <div class="field"><label>Industry</label><select id="pfIndustry" onchange="onOptionSelectChange(this,'Industry')"></select></div>
+      <div class="field"><label>Organization</label><select id="pfOrganization" onchange="onOptionSelectChange(this,'Organization')"></select></div>
+      <div class="field"><label>Quote Number</label><input id="pfQuoteNumber"></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="field"><label>Start Date</label><input type="date" id="pfStart"></div>
+      <div class="field"><label>End Date</label><input type="date" id="pfEnd"></div>
+    </div>
+  </div></div>
+
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">📝 Description</div></div><div class="fc-body">
+    <div class="field"><label>Project Description</label><textarea id="pfDescription" rows="3"></textarea></div>
+  </div></div>
+
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">📇 Contacts</div></div><div class="fc-body">
+    <div class="fg fg2">
+      <div class="field"><label>Ship To</label><input id="pfShipTo"></div>
+      <div class="field"><label>Contact Name</label><input id="pfContactName"></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="field"><label>Contact Email</label><input type="email" id="pfContactEmail"></div>
+      <div class="field"><label>Billing Address</label><input id="pfBillingAddress"></div>
+    </div>
+  </div></div>
+
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">👥 Team</div></div><div class="fc-body">
+    <div class="fg fg2">
+      <div class="field"><label>Director <span class="req">*</span></label><select id="pfDirector"></select><div style="font-size:11px;color:var(--muted);margin-top:3px">A member of Management overseeing this project.</div></div>
+      <div class="field"><label>Business Unit Head</label><input id="pfBUHeadDisplay" disabled></div>
+    </div>
+    <div class="fg fg2" style="margin-top:14px">
+      <div class="field"><label>Managers <span class="req">*</span> <span style="font-weight:400;color:var(--muted)">(min. 1 — reporting to this BU)</span></label>
+        <select id="pfManagers" multiple size="5"></select>
+      </div>
+      <div class="field"><label>Employees <span class="req">*</span> <span style="font-weight:400;color:var(--muted)">(min. 1)</span></label>
+        <select id="pfEmployees" multiple size="5"></select>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px">Hold Ctrl (Cmd on Mac) to select multiple.</div>
+  </div></div>
+
+  <div class="sub-bar"><button class="ghost" onclick="go('projects')">Cancel</button><button class="bpri" onclick="saveProjectForm()">Save Project</button></div>
+</div>
+
+<!-- ===== BUDGET (per project — Admin / BU Head) ===== -->
+<div class="pane" id="pane-budget">
+  <div class="tc"><div class="th2"><div class="th2-title" id="budTitle">Budget Plan</div><div class="tb"><select class="fsel" id="budProjSel" onchange="onBudProjChange()"></select></div></div>
+  <div style="padding:14px 18px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+    <div class="tab-bar"><button class="tbb on" id="budt1" onclick="budTab('plan')">Budget Plan</button><button class="tbb" id="budt2" onclick="budTab('phasing')">Monthly Phasing</button><button class="tbb" id="budt3" onclick="budTab('invoicing')">Invoicing Schedule</button></div>
+    <div id="budActionBar">
+      <button class="bsec" id="budEditBtn" onclick="toggleBudgetEdit()">Edit / Revise</button>
+    </div>
+  </div>
+
+  <!-- Budget Plan tab -->
+  <div id="budPlanSection">
+    <div class="tw"><table><thead><tr><th>Task</th><th>Work Type</th><th>Bill Type</th><th>Bill Rate</th><th>Cost Rate</th><th>Budget Hrs</th><th>Actual Hrs</th><th>Budget Rev.</th><th>Budget Cost</th><th>Margin %</th><th>Assigned To</th></tr></thead><tbody id="budBody"><tr><td colspan="11"><div class="empty">Select a project above</div></td></tr></tbody></table></div>
+  </div>
+
+  <!-- Monthly Phasing tab -->
+  <div id="budPhasingSection" style="display:none">
+    <div class="tw"><table><thead><tr id="phHeadRow"><th>Task</th></tr></thead><tbody id="phBody"><tr><td><div class="empty">Select a project above</div></td></tr></tbody></table></div>
+  </div>
+
+  <!-- Invoicing Schedule tab -->
+  <div id="budInvoicingSection" style="display:none">
+    <div class="tw"><table><thead><tr><th>Plan Amount</th><th>Sched. Date</th><th>Payment Terms</th><th>Notes</th><th>Invoice Status</th><th></th></tr></thead><tbody id="invBody"><tr><td colspan="6"><div class="empty">Select a project above</div></td></tr></tbody></table></div>
+    <div style="padding:8px 18px;font-size:11px;color:var(--muted)">Invoice number, actual amount, and payment receipt are filled in by Finance once each milestone is due — see Finance's Invoicing screen.</div>
+  </div>
+  </div>
+
+  <div class="tc"><div class="th2"><div class="th2-title">Revision History</div></div><div class="tw"><table><thead><tr><th>Rev#</th><th>Changed By</th><th>Date</th><th>Summary</th></tr></thead><tbody id="revBody"><tr><td colspan="4"><div class="empty">No revisions yet</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== BU REPORT ===== -->
+<div class="pane" id="pane-bu-report">
+  <div class="sg" id="buStats"></div>
+  <div class="tc"><div class="th2"><div class="th2-title">Budget vs Actual by Project</div><div class="tb"><button class="ghost" onclick="loadBUReport()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Project</th><th>Status</th><th>Budget Revenue</th><th>Budget Cost</th><th>Actual Cost</th><th>Cost Variance</th></tr></thead><tbody id="buBody"><tr><td colspan="6"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== MANAGEMENT REPORT ===== -->
+<div class="pane" id="pane-mgmt-report">
+  <div class="sg" id="mgStats"></div>
+  <div class="tc"><div class="th2"><div class="th2-title">All Projects — Budget vs Actual</div><div class="tb"><button class="ghost" onclick="loadMgmtReport()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Project</th><th>Status</th><th>Budget Revenue</th><th>Budget Cost</th><th>Actual Cost</th><th>Cost Variance</th></tr></thead><tbody id="mgBody"><tr><td colspan="6"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== USERS (Admin) ===== -->
+<div class="pane" id="pane-users">
+  <div class="tc"><div class="th2"><div class="th2-title">User Management</div><div class="tb"><button class="bpri" onclick="openUserModal()">+ New User</button><button class="ghost" onclick="loadUsers()">Refresh</button></div></div>
+  <div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>BU</th><th>Manager</th><th>Active</th><th>Actions</th></tr></thead><tbody id="usrBody"><tr><td colspan="7"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+<!-- ===== SETTINGS (Admin) ===== -->
+<div class="pane" id="pane-settings">
+  <div class="fcard"><div class="fc-hdr"><div class="fc-title">Company Settings</div></div><div class="fc-body">
+  <div class="fg fg2">
+    <div class="field"><label>Company Name</label><input type="text" id="cfgCompanyName"></div>
+    <div class="field"><label>Currency Symbol</label><input type="text" id="cfgCurrency"></div>
+  </div>
+  </div></div>
+  <div class="sub-bar" style="border:none;background:none;justify-content:flex-start"><button class="bpri" onclick="saveSettings()">Save Settings</button></div>
+</div>
+
+<!-- ===== INSIGHTS (Management / BU Head / Admin) ===== -->
+<div class="pane" id="pane-insights">
+  <div class="tab-bar" id="insTabBar" style="margin-bottom:16px;flex-wrap:wrap"></div>
+  <div id="insContent"><div class="empty">Loading...</div></div>
+</div>
+
+<!-- ===== MY INSIGHTS (Employee / Manager) ===== -->
+<div class="pane" id="pane-my-insights">
+  <div id="miContent"><div class="empty">Loading...</div></div>
+</div>
+
+<!-- ===== PROJECT DETAIL / P&L (BU Head, Admin, Management — view) ===== -->
+<div class="pane" id="pane-project-detail">
+  <div class="sub-bar" style="border:none;background:none;justify-content:flex-start;padding:0 0 14px"><button class="ghost" onclick="go(pdReturnPane||'bu-report')">&larr; Back to Report</button></div>
+  <div id="pdHeader" style="margin-bottom:14px"></div>
+  <div class="sg" id="pdPnLStats"></div>
+  <div class="tc"><div class="th2"><div class="th2-title">Labor Cost Breakdown</div></div>
+  <div class="tw"><table><thead><tr><th>Employee</th><th>Month</th><th>Hours</th><th>Cost</th><th>Rate Source</th></tr></thead><tbody id="pdLaborBody"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+  <div class="tc"><div class="th2"><div class="th2-title">Other Costs (Approved)</div></div>
+  <div class="tw"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Description</th><th>Entered By</th></tr></thead><tbody id="pdCostBody"><tr><td colspan="5"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+  <div class="tc"><div class="th2"><div class="th2-title">Invoicing</div></div>
+  <div class="tw"><table><thead><tr><th>Sched. Date</th><th>Plan Amount</th><th>Status</th><th>Invoice No.</th><th>Actual Amount</th><th>Received</th></tr></thead><tbody id="pdInvBody"><tr><td colspan="6"><div class="empty">Loading...</div></td></tr></tbody></table></div></div>
+</div>
+
+</main>
+
+<!-- ===== Modals ===== -->
+<div class="overlay" id="profileOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle" id="profTitle">Employee Profile</div><button class="mcls" onclick="closeProfileModal()">&times;</button></div>
+  <div class="mbdy" id="profBody"><div class="empty">Loading...</div></div>
+  <div class="mft"><button class="bsec" onclick="closeProfileModal()">Close</button></div>
+</div></div>
+
+<div class="overlay" id="costOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Add Cost Entry</div><button class="mcls" onclick="closeCostModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Category</label><select id="cdCategory"></select><div style="font-size:11px;color:var(--muted);margin-top:3px">Drawn from this project's budget Work Types.</div></div>
+      <div class="fg fg2">
+        <div class="field"><label>Amount</label><input type="number" id="cdAmount" min="0" step="0.01"></div>
+        <div class="field"><label>Date</label><input type="date" id="cdDate"></div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="cdDescription" rows="2"></textarea></div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closeCostModal()">Cancel</button><button class="bpri" onclick="saveCostEntry()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="logInvoiceOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Log Invoice</div><button class="mcls" onclick="closeLogInvoiceModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Project <span class="req">*</span></label><select id="liProject"></select></div>
+      <div class="fg fg2">
+        <div class="field"><label>Amount <span class="req">*</span></label><input type="number" id="liAmount"></div>
+        <div class="field"><label>Invoice Date</label><input type="date" id="liInvoiceDate"></div>
+      </div>
+      <div class="fg fg2">
+        <div class="field"><label>Invoice Number</label><input id="liInvoiceNo"></div>
+        <div class="field"><label>Payment Terms</label><input id="liPaymentTerms"></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin:4px 0 0">Optional — fill these in only if payment has already been received:</div>
+      <div class="fg fg2">
+        <div class="field"><label>Date Received</label><input type="date" id="liDateReceived"></div>
+        <div class="field"><label>Amount Received</label><input type="number" id="liAmountReceived"></div>
+      </div>
+      <div class="field"><label>Notes</label><input id="liNotes"></div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closeLogInvoiceModal()">Cancel</button><button class="bpri" onclick="saveLogInvoice()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="invRaiseOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Raise Invoice</div><button class="mcls" onclick="closeInvRaiseModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Invoice Number</label><input id="irInvoiceNo"></div>
+      <div class="fg fg2">
+        <div class="field"><label>Invoice Date</label><input type="date" id="irInvoiceDate"></div>
+        <div class="field"><label>Actual Amount</label><input type="number" id="irActualAmount"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closeInvRaiseModal()">Cancel</button><button class="bpri" onclick="saveRaiseInvoice()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="invReceiveOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Record Payment Received</div><button class="mcls" onclick="closeInvReceiveModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg fg2">
+      <div class="field"><label>Date Received</label><input type="date" id="irDateReceived"></div>
+      <div class="field"><label>Amount Received</label><input type="number" id="irAmountReceived"></div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closeInvReceiveModal()">Cancel</button><button class="bpri" onclick="saveRecordPayment()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="payrollMasterOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Payroll Master</div><button class="mcls" onclick="closePayrollMasterModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Employee</label><select id="pmEmployee"></select></div>
+      <div class="fg fg2">
+        <div class="field"><label>Monthly CTC</label><input type="number" id="pmCTC"></div>
+        <div class="field"><label>Effective From</label><input type="date" id="pmEffective"></div>
+      </div>
+      <div class="field"><label>Notes</label><input id="pmNotes"></div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closePayrollMasterModal()">Cancel</button><button class="bpri" onclick="savePayrollMasterEntry()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="payrollEntryOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle">Log Monthly Pay</div><button class="mcls" onclick="closePayrollEntryModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Employee</label><select id="peEmployee"></select></div>
+      <div class="field"><label>Month</label><input type="month" id="peEntryMonth"></div>
+      <div class="fg fg3">
+        <div class="field"><label>Basic Pay</label><input type="number" id="peBasic"></div>
+        <div class="field"><label>Allowances</label><input type="number" id="peAllowances"></div>
+        <div class="field"><label>Deductions</label><input type="number" id="peDeductions"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closePayrollEntryModal()">Cancel</button><button class="bpri" onclick="savePayrollEntryForm()">Save</button></div>
+</div></div>
+
+<div class="overlay" id="userOverlay"><div class="modal">
+  <div class="mhdr"><div class="mtitle" id="userModalTitle">New User</div><button class="mcls" onclick="closeUserModal()">&times;</button></div>
+  <div class="mbdy">
+    <div class="fg">
+      <div class="field"><label>Employee / User ID <span class="req">*</span></label><input id="usUserID" placeholder="e.g. EMP-001"></div>
+      <div class="field"><label>Name</label><input id="usName"></div>
+      <div class="field"><label>Email</label><input id="usEmail"></div>
+      <div class="fg fg2">
+        <div class="field"><label>Role</label><select id="usRole" onchange="onUserRoleChange()"><option>EMPLOYEE</option><option>MANAGER</option><option>BU_HEAD</option><option>ADMIN</option><option>MANAGEMENT</option><option>FINANCE</option><option>HR</option></select></div>
+        <div class="field"><label>BU</label><select id="usBU" onchange="onBUOptionChange(this)"></select></div>
+      </div>
+      <div class="field" id="usManagerWrap"><label id="usManagerLabel">Reports To</label><select id="usManager"><option value="">No manager / top level</option></select></div>
+      <div class="fg fg2">
+        <div class="field"><label>Status</label><select id="usActive"><option value="TRUE">Active</option><option value="FALSE">Inactive</option></select></div>
+        <div class="field"><label>Temporary Password</label><input id="usPassword" placeholder="Leave blank for default"></div>
+      </div>
+    </div>
+  </div>
+  <div class="mft"><button class="bsec" onclick="closeUserModal()">Cancel</button><button class="bpri" onclick="saveUser()">Save</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<div id="loadingOverlay" style="display:none;position:fixed;inset:0;background:rgba(26,26,46,0.12);z-index:900;align-items:center;justify-content:center">
+  <div style="width:44px;height:44px;border:4px solid rgba(26,26,46,0.15);border-top-color:var(--blue3);border-radius:50%;animation:pms-spin 0.7s linear infinite"></div>
+</div>
+<style>@keyframes pms-spin{to{transform:rotate(360deg)}}</style>
+
+<script>
+// TODO: replace with your deployed Apps Script /exec URL (same as index.html)
+var API = "https://script.google.com/macros/s/AKfycbx-6Vhqz8PAeSdW1BbC1GNGHLhC38nReyLsthM2xXWqTbWT68foqoPuHSYEq1awNROp/exec";
+var sess = {}, tok = '';
+try { sess = JSON.parse(sessionStorage.getItem('pms_user')||'{}'); tok = sessionStorage.getItem('pms_token')||''; } catch(e){}
+if (!sess.role) { window.location.href = 'index.html'; }
+
+var RLABELS = {EMPLOYEE:'Employee',MANAGER:'Manager',BU_HEAD:'BU Head',ADMIN:'Administrator',MANAGEMENT:'Management',FINANCE:'Finance',HR:'HR'};
+
+var NAV_ICONS = {
+  dashboard:'📊', 'log-time':'⏱️', 'my-timesheet':'📋', approvals:'✅',
+  projects:'🗂️', budget:'💰', 'bu-report':'📈', 'mgmt-report':'📊', users:'👥', settings:'⚙️',
+  'cost-details':'💵', invoicing:'🧾', 'approved-costs':'📄', 'payroll-master':'🪪', 'payroll-entries':'💳', insights:'🔎', 'my-insights':'🙋'
+};
+
+var NAV = {
+  EMPLOYEE:   [{id:'dashboard',lbl:'Dashboard'},{id:'log-time',lbl:'Log Time'},{id:'my-timesheet',lbl:'My Timesheet'},{id:'my-insights',lbl:'My Insights'}],
+  MANAGER:    [{id:'dashboard',lbl:'Dashboard'},{id:'approvals',lbl:'Approvals'},{id:'log-time',lbl:'Log Time'},{id:'my-timesheet',lbl:'My Timesheet'},{id:'cost-details',lbl:'Cost Details'},{id:'my-insights',lbl:'My Insights'}],
+  BU_HEAD:    [{id:'dashboard',lbl:'Dashboard'},{id:'insights',lbl:'Insights'},{id:'approvals',lbl:'Approvals'},{id:'bu-report',lbl:'BU Report'},{id:'projects',lbl:'Projects'},{id:'budget',lbl:'Budget Plan'},{id:'cost-details',lbl:'Cost Details'}],
+  ADMIN:      [{id:'dashboard',lbl:'Dashboard'},{id:'insights',lbl:'Insights'},{id:'projects',lbl:'Projects'},{id:'budget',lbl:'Budget Plan'},{id:'approvals',lbl:'Approvals'},{id:'cost-details',lbl:'Cost Details'},{id:'users',lbl:'Users'},{id:'mgmt-report',lbl:'Reports'},{id:'invoicing',lbl:'Invoicing'},{id:'payroll-master',lbl:'Payroll Master'},{id:'payroll-entries',lbl:'Monthly Pay'},{id:'settings',lbl:'Settings'}],
+  MANAGEMENT: [{id:'dashboard',lbl:'Dashboard'},{id:'insights',lbl:'Insights'},{id:'mgmt-report',lbl:'Reports'},{id:'projects',lbl:'Projects'}],
+  FINANCE:    [{id:'dashboard',lbl:'Dashboard'},{id:'insights',lbl:'Insights'},{id:'invoicing',lbl:'Invoicing'},{id:'approved-costs',lbl:'Project Costs'}],
+  HR:         [{id:'dashboard',lbl:'Dashboard'},{id:'insights',lbl:'Insights'},{id:'payroll-master',lbl:'Payroll Master'},{id:'payroll-entries',lbl:'Monthly Pay'},{id:'users',lbl:'Employees'}]
+};
+
+var allProjects = [];
+
+function init() {
+  document.getElementById('sAv').textContent = (sess.name||'U').charAt(0).toUpperCase();
+  document.getElementById('sNm').textContent = sess.name||'User';
+  document.getElementById('sRl').textContent = RLABELS[sess.role]||sess.role;
+  var rt = document.getElementById('rtag'); rt.textContent = RLABELS[sess.role]||sess.role; rt.className='rtag rt-'+sess.role;
+  document.getElementById('loBtn').addEventListener('click', function(){ sessionStorage.clear(); window.location.href='index.html'; });
+  if (sess.role === 'ADMIN' || sess.role === 'BU_HEAD') document.getElementById('newProjBtn').style.display = 'inline-flex';
+  buildNav();
+  loadCompanyName();
+  go('dashboard');
+}
+
+function loadCompanyName() {
+  api({ action: 'getConfig' }, function(res) {
+    if (res && res.config) {
+      var name = res.config.CompanyName || 'Your Company';
+      document.getElementById('sCoName').innerHTML = name.split(' ').slice(0,-1).join(' ') + ' <span>' + (name.split(' ').slice(-1)[0]||'') + '</span>';
+      document.title = name + ' — PMS';
+      window._currency = res.config.CurrencySymbol || 'Rs.';
+    }
+  });
+}
+
+function buildNav() {
+  var items = NAV[sess.role] || NAV.EMPLOYEE;
+  var nav = document.getElementById('sideNav');
+  nav.innerHTML = '';
+  items.forEach(function(it) {
+    var d = document.createElement('div');
+    d.className = 'ni'; d.setAttribute('data-pane', it.id);
+    var icon = document.createElement('span'); icon.textContent = NAV_ICONS[it.id]||'●';
+    var lbl = document.createElement('span'); lbl.textContent = it.lbl;
+    d.appendChild(icon); d.appendChild(lbl);
+    d.addEventListener('click', function(){ go(it.id); });
+    nav.appendChild(d);
+  });
+}
+
+function go(id) {
+  document.querySelectorAll('.pane').forEach(function(p){ p.className='pane'; });
+  document.querySelectorAll('.ni').forEach(function(n){ n.className='ni'; });
+  var pane = document.getElementById('pane-'+id);
+  if (pane) pane.className = 'pane on';
+  var ni = document.querySelector('.ni[data-pane="'+id+'"]');
+  if (ni) ni.className = 'ni on';
+  var titles = {dashboard:'Dashboard','log-time':'Log Time','my-timesheet':'My Timesheet',approvals:'Approvals',projects:'Projects','project-form':(editingProjectId?'Edit Project':'New Project'),budget:'Budget Plan','bu-report':'BU Report','mgmt-report':'Reports',users:(sess.role==='HR'?'Employees':'User Management'),settings:'Settings','cost-details':'Cost Details',invoicing:'Invoicing',
+    'approved-costs':'Project Costs','payroll-master':'Payroll Master','payroll-entries':'Monthly Pay','project-detail':'Project Detail',insights:'Insights','my-insights':'My Insights'};
+  document.getElementById('topTitle').textContent = titles[id]||id;
+  if (id==='dashboard') loadDash();
+  if (id==='log-time') ltInit();
+  if (id==='my-timesheet') loadMyTimesheets();
+  if (id==='approvals') loadApprovals();
+  if (id==='projects') loadProjects();
+  if (id==='project-form') projFormInit();
+  if (id==='budget') budInit();
+  if (id==='bu-report') loadBUReport();
+  if (id==='mgmt-report') loadMgmtReport();
+  if (id==='users') loadUsers();
+  if (id==='settings') loadSettings();
+  if (id==='cost-details') costDetailsInit();
+  if (id==='invoicing') invoicingInit();
+  if (id==='approved-costs') loadApprovedCostsFinance();
+  if (id==='payroll-master') loadPayrollMaster();
+  if (id==='payroll-entries') { document.getElementById('peMonth').value = new Date().toISOString().slice(0,7); loadPayrollEntries(); }
+  if (id==='project-detail') loadProjectDetail();
+  if (id==='insights') insInit();
+  if (id==='my-insights') insLoadPersonal();
+}
+var pdReturnPane = 'bu-report';
+var pdProjectId = null;
+function openProjectDetail(projectId) {
+  pdProjectId = projectId;
+  pdReturnPane = (sess.role==='MANAGEMENT') ? 'mgmt-report' : 'bu-report';
+  go('project-detail');
+}
+function loadProjectDetail() {
+  if (!pdProjectId) return;
+  api({ action:'getProjectPnL', projectId: pdProjectId }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var pr = res.project, pnl = res.pnl;
+    document.getElementById('pdHeader').innerHTML =
+      '<div style="font-size:20px;font-weight:700;color:var(--blue)">'+pr.ProjectName+' <span style="font-size:13px;color:var(--muted);font-weight:400">('+pr.ProjectID+')</span></div>'+
+      '<div style="font-size:13px;color:var(--muted);margin-top:4px">'+(pr.Customer||'-')+' &middot; '+(pr.BU||'-')+' &middot; '+statusBadge(pr.Status)+'</div>';
+    document.getElementById('pdPnLStats').innerHTML =
+      '<div class="sc"><div class="sl">Budget Revenue</div><div class="sv">'+fmtA(pnl.budgetRevenue)+'</div></div>'+
+      '<div class="sc"><div class="sl">Budget Cost</div><div class="sv">'+fmtA(pnl.budgetCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Budget Margin</div><div class="sv '+(pnl.budgetMargin<0?'red':'green')+'">'+fmtA(pnl.budgetMargin)+'</div></div>'+
+      '<div class="sc"><div class="sl">Actual Labor Cost</div><div class="sv amber">'+fmtA(pnl.actualLaborCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Actual Other Cost</div><div class="sv amber">'+fmtA(pnl.actualOtherCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Total Actual Cost</div><div class="sv amber">'+fmtA(pnl.actualCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Invoiced Revenue</div><div class="sv">'+fmtA(pnl.invoicedRevenue)+'</div></div>'+
+      '<div class="sc"><div class="sl">Received Revenue</div><div class="sv green">'+fmtA(pnl.receivedRevenue)+'</div></div>'+
+      '<div class="sc"><div class="sl">Actual Margin</div><div class="sv '+(pnl.actualMargin<0?'red':'green')+'">'+fmtA(pnl.actualMargin)+'</div></div>';
+    var labor = res.laborBreakdown||[];
+    document.getElementById('pdLaborBody').innerHTML = labor.length ? labor.map(function(l){
+      return '<tr><td>'+ncLink(l.EmployeeName,null,l.EmployeeID)+'</td><td>'+l.Month+'</td><td>'+l.Hours+'</td><td class="amt">'+fmtA(l.Cost)+'</td><td style="font-size:11px;color:var(--muted)">'+l.RateSource+'</td></tr>';
+    }).join('') : '<tr><td colspan="5"><div class="empty">No approved timesheet hours yet.</div></td></tr>';
+    var costs = res.otherCosts||[];
+    document.getElementById('pdCostBody').innerHTML = costs.length ? costs.map(function(c){
+      return '<tr><td>'+fmtD(c.EntryDate)+'</td><td>'+(c.Category||'-')+'</td><td class="amt">'+fmtA(c.Amount)+'</td><td>'+(c.Description||'-')+'</td><td>'+(c.EnteredByUserID||'-')+'</td></tr>';
+    }).join('') : '<tr><td colspan="5"><div class="empty">No approved cost entries.</div></td></tr>';
+    var inv = res.invoicing||[];
+    document.getElementById('pdInvBody').innerHTML = inv.length ? inv.map(function(r){
+      return '<tr><td>'+fmtD(r.SchedDate)+'</td><td class="amt">'+fmtA(r.Amount)+'</td><td>'+statusBadge(r.InvoiceStatus||'NOT_RAISED')+'</td><td>'+(r.InvoiceNo||'-')+'</td><td>'+(r.ActualAmount?fmtA(r.ActualAmount):'-')+'</td><td>'+(r.AmountReceived?fmtA(r.AmountReceived):'-')+'</td></tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">No invoicing milestones.</div></td></tr>';
+  });
+}
+
+function api(params, cb) {
+  var name = 'pms'+Date.now()+Math.floor(Math.random()*9999);
+  var done = false;
+  showLoading();
+  var timer = setTimeout(function(){ if(!done){done=true;hideLoading();cleanup();cb({error:'Timed out.'});} },25000);
+  function cleanup(){ delete window[name]; var s=document.getElementById('s_'+name); if(s&&s.parentNode) s.parentNode.removeChild(s); }
+  window[name] = function(data){
+    if(!done){
+      done=true;clearTimeout(timer);hideLoading();cleanup();
+      if(data.error && (data.error.indexOf('token')>=0||data.error.indexOf('Login')>=0||data.error.indexOf('session')>=0||data.error.indexOf('Session')>=0)) {
+        toast('Session expired. Please login again.','err');
+        setTimeout(function(){ sessionStorage.clear(); window.location.href='index.html'; },2000);
+        return;
+      }
+      cb(data);
+    }
+  };
+  var q='callback='+encodeURIComponent(name)+'&token='+encodeURIComponent(tok);
+  for(var k in params){ if(Object.prototype.hasOwnProperty.call(params,k)) q+='&'+encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }
+  var sc=document.createElement('script'); sc.id='s_'+name; sc.src=API+'?'+q;
+  sc.onerror=function(){ if(!done){done=true;hideLoading();clearTimeout(timer);cleanup();cb({error:'Network error.'});} };
+  document.body.appendChild(sc);
+}
+var _pmsLoadingCount = 0;
+function showLoading(){ _pmsLoadingCount++; var el=document.getElementById('loadingOverlay'); if(el) el.style.display='flex'; }
+function hideLoading(){ _pmsLoadingCount=Math.max(0,_pmsLoadingCount-1); if(_pmsLoadingCount===0){ var el=document.getElementById('loadingOverlay'); if(el) el.style.display='none'; } }
+
+function toast(msg, type) {
+  var el=document.getElementById('toast'); el.textContent=msg; el.className='toast show t-'+(type||'info');
+  setTimeout(function(){ el.className='toast'; },4000);
+}
+
+function fmtA(n){ var v=parseFloat(n)||0; return (window._currency||'Rs.')+v.toLocaleString('en-IN',{minimumFractionDigits:0}); }
+function fmtD(d){ if(!d) return '-'; try{ return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}); }catch(e){ return d; } }
+/** Renders "Name" with the underlying code shown smaller/muted below it. */
+function nc(name, code){
+  if (!name && !code) return '-';
+  if (!code || name===code) return name||code;
+  return '<div>'+name+'</div><div style="font-size:10.5px;color:var(--muted);margin-top:1px">'+code+'</div>';
+}
+/** Same as nc(), but the name is clickable and opens that person's profile card. */
+function ncLink(name, code, userId){
+  if (!name && !code) return '-';
+  var id = userId || code;
+  var nameHtml = '<a href="javascript:void(0)" onclick="openUserProfile(\''+id+'\')" style="color:var(--blue);text-decoration:none;font-weight:600" onmouseover="this.style.textDecoration=\'underline\'" onmouseout="this.style.textDecoration=\'none\'">'+(name||code)+'</a>';
+  if (!code || name===code) return nameHtml;
+  return '<div>'+nameHtml+'</div><div style="font-size:10.5px;color:var(--muted);margin-top:1px">'+code+'</div>';
+}
+function openUserProfile(userId) {
+  document.getElementById('profTitle').textContent = 'Profile';
+  document.getElementById('profBody').innerHTML = '<div class="empty">Loading...</div>';
+  document.getElementById('profileOverlay').className = 'overlay on';
+  api({ action:'getUserProfile', userId: userId }, function(res){
+    if (res.error) { document.getElementById('profBody').innerHTML = '<div class="empty">'+res.error+'</div>'; return; }
+    var pr = res.profile;
+    document.getElementById('profTitle').textContent = pr.Name;
+    var html = '<div class="fg fg2">'+
+      '<div class="field"><label>Email</label><div style="padding:9px 0">'+pr.Email+'</div></div>'+
+      '<div class="field"><label>Role</label><div style="padding:9px 0">'+(RLABELS[pr.Role]||pr.Role)+'</div></div>'+
+      '<div class="field"><label>Designation</label><div style="padding:9px 0">'+(pr.Designation||'-')+'</div></div>'+
+      '<div class="field"><label>BU</label><div style="padding:9px 0">'+(pr.BU||'-')+'</div></div>'+
+      '<div class="field"><label>Reports To</label><div style="padding:9px 0">'+(pr.ManagerName||'-')+'</div></div>'+
+      '<div class="field"><label>Status</label><div style="padding:9px 0">'+(String(pr.Active).toUpperCase()==='TRUE'?'✅ Active':'❌ Inactive')+'</div></div>'+
+      '</div>';
+    if (pr.stats) {
+      html += '<div class="sg" style="margin-top:14px">'+
+        '<div class="sc"><div class="sl">Total Entries</div><div class="sv">'+pr.stats.totalEntries+'</div></div>'+
+        '<div class="sc"><div class="sl">Approved Hours</div><div class="sv green">'+pr.stats.approvedHours+'</div></div>'+
+        '<div class="sc"><div class="sl">Pending</div><div class="sv amber">'+pr.stats.pendingEntries+'</div></div>'+
+        '</div>';
+    }
+    if (pr.kpis && pr.kpis.length) {
+      html += '<div style="margin-top:14px"><div class="fc-title" style="margin-bottom:8px">KPIs</div><table style="width:100%"><thead><tr><th>KPI</th><th>Target</th><th>Actual</th><th>Period</th></tr></thead><tbody>'+
+        pr.kpis.map(function(k){ return '<tr><td>'+k.KPIName+'</td><td>'+k.TargetValue+' '+(k.Unit||'')+'</td><td>'+(k.ActualValue||'-')+'</td><td>'+k.Period+'</td></tr>'; }).join('')+
+        '</tbody></table></div>';
+    }
+    document.getElementById('profBody').innerHTML = html;
+  });
+}
+function closeProfileModal(){ document.getElementById('profileOverlay').className='overlay'; }
+function statusBadge(s){
+  var m={PENDING:['b-pending','Pending'],APPROVED:['b-approved','Approved'],REJECTED:['b-rejected','Rejected'],
+         ACTIVE:['b-active','Active'],DRAFT:['b-draft','Draft'],CLOSED:['b-closed','Closed'],ON_HOLD:['b-hold','On Hold'],
+         YET_TO_START:['b-yettostart','Yet to Start'],HOLD:['b-hold','Hold'],COMPLETED:['b-completed','Completed'],DROPPED:['b-dropped','Dropped'],
+         NOT_RAISED:['b-notraised','Not Raised'],RAISED:['b-raised','Raised'],RECEIVED:['b-received','Received']};
+  var info=m[s]||['b-draft',s||'-'];
+  return '<span class="badge '+info[0]+'">'+info[1]+'</span>';
+}
+
+/* ===================== DASHBOARD ===================== */
+function loadDash() {
+  document.getElementById('dashTitle').textContent = RLABELS[sess.role] + ' Dashboard';
+  api({ action:'getDashboard' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var html = '';
+    (res.stats||[]).forEach(function(s){
+      html += '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+(s.money?fmtA(s.value):s.value)+'</div></div>';
+    });
+    document.getElementById('dashStats').innerHTML = html;
+
+    var extra = document.getElementById('dashExtra');
+    extra.innerHTML = '';
+    if (res.byBU) {
+      var t = '<div class="tc"><div class="th2"><div class="th2-title">By Business Unit</div></div><div class="tw"><table><thead><tr><th>BU</th><th>Projects</th><th>Budget Revenue</th><th>Budget Cost</th></tr></thead><tbody>';
+      res.byBU.forEach(function(b){ t += '<tr><td>'+b.BU+'</td><td>'+b.count+'</td><td class="amt">'+fmtA(b.revenue)+'</td><td class="amt">'+fmtA(b.cost)+'</td></tr>'; });
+      t += '</tbody></table></div></div>';
+      extra.innerHTML = t;
+    }
+    if (res.kpis && res.kpis.length) {
+      var k = '<div class="tc"><div class="th2"><div class="th2-title">My KPIs</div></div><div class="tw"><table><thead><tr><th>KPI</th><th>Target</th><th>Actual</th><th>Period</th></tr></thead><tbody>';
+      res.kpis.forEach(function(x){ k += '<tr><td>'+x.KPIName+'</td><td>'+x.TargetValue+' '+(x.Unit||'')+'</td><td>'+(x.ActualValue||'-')+'</td><td>'+x.Period+'</td></tr>'; });
+      k += '</tbody></table></div></div>';
+      extra.innerHTML += k;
+    }
+  });
+}
+
+/* ===================== LOG TIME ===================== */
+/* ===================== LOG TIME (day-wise) ===================== */
+var ltDayProjects = [];   // projects available to log for the selected date
+var ltProjRows = [];      // { ProjectID, TaskNo, HoursLogged, WorkDescription }
+var ltActivityRows = [];  // { ActivityType, HoursLogged, WorkDescription }
+
+function ltInit() {
+  document.getElementById('ltDate').value = new Date().toISOString().slice(0,10);
+  loadOptionLists();
+  ltLoadDay();
+}
+function ltLoadDay() {
+  ltProjRows = []; ltActivityRows = [];
+  var date = document.getElementById('ltDate').value;
+  api({ action:'getMyLoggableProjects', date: date }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    ltDayProjects = res.projects||[];
+    if (ltDayProjects.length) ltProjRows.push({ ProjectID:'', TaskNo:'', HoursLogged:'', WorkDescription:'' });
+    renderLtProjectRows();
+    renderLtActivityRows();
+  });
+}
+function renderLtProjectRows() {
+  var wrap = document.getElementById('ltProjectRows');
+  document.getElementById('ltAddProjRowBtn').style.display = ltDayProjects.length ? '' : 'none';
+  if (!ltDayProjects.length) { wrap.innerHTML = '<div class="empty">No active projects assigned to you.</div>'; return; }
+  if (!ltProjRows.length) { wrap.innerHTML = '<div class="empty">No project rows yet — click "Add another project" below.</div>'; return; }
+  wrap.innerHTML = ltProjRows.map(function(r, i){
+    var projOpts = '<option value="">Select project</option>' + ltDayProjects.map(function(p){ return '<option value="'+p.ProjectID+'"'+(p.ProjectID===r.ProjectID?' selected':'')+'>'+p.ProjectName+'</option>'; }).join('');
+    var proj = ltDayProjects.filter(function(p){ return p.ProjectID===r.ProjectID; })[0];
+    var taskOpts = proj && proj.Tasks.length
+      ? '<option value="">Select task</option>' + proj.Tasks.map(function(t){ return '<option value="'+t.TaskNo+'"'+(t.TaskNo===r.TaskNo?' selected':'')+'>'+t.TaskNo+' — '+t.TaskDescription+'</option>'; }).join('')
+      : (proj ? '<option value="">No tasks assigned to you on this project</option>' : '<option value="">Select task</option>');
+    return '<div class="fg" style="grid-template-columns:2fr 2fr 1fr 2fr auto;margin-bottom:10px;align-items:end">'+
+      '<div class="field"><label>Project</label><select onchange="ltProjRows['+i+'].ProjectID=this.value;ltProjRows['+i+'].TaskNo=\'\';renderLtProjectRows()">'+projOpts+'</select></div>'+
+      '<div class="field"><label>Task</label><select onchange="ltProjRows['+i+'].TaskNo=this.value">'+taskOpts+'</select></div>'+
+      '<div class="field"><label>Hours</label><input type="number" min="0.5" max="24" step="0.5" value="'+(r.HoursLogged||'')+'" onchange="ltProjRows['+i+'].HoursLogged=this.value"></div>'+
+      '<div class="field"><label>Description</label><input value="'+(r.WorkDescription||'')+'" onchange="ltProjRows['+i+'].WorkDescription=this.value"></div>'+
+      '<button class="btn btn-no" onclick="ltProjRows.splice('+i+',1);renderLtProjectRows()">Remove</button>'+
+      '</div>';
+  }).join('');
+}
+function ltAddProjectRow() { ltProjRows.push({ ProjectID:'', TaskNo:'', HoursLogged:'', WorkDescription:'' }); renderLtProjectRows(); }
+function renderLtActivityRows() {
+  var wrap = document.getElementById('ltActivityRows');
+  if (!ltActivityRows.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = ltActivityRows.map(function(r, i){
+    return '<div class="fg" style="grid-template-columns:2fr 1fr 2fr auto;margin-bottom:10px;align-items:end">'+
+      '<div class="field"><label>Activity</label><select onchange="ltActivityOptionChange('+i+',this)">'+optionsHtml_('ActivityType', r.ActivityType)+'</select></div>'+
+      '<div class="field"><label>Hours</label><input type="number" min="0.5" max="24" step="0.5" value="'+(r.HoursLogged||'')+'" onchange="ltActivityRows['+i+'].HoursLogged=this.value"></div>'+
+      '<div class="field"><label>Description</label><input value="'+(r.WorkDescription||'')+'" onchange="ltActivityRows['+i+'].WorkDescription=this.value"></div>'+
+      '<button class="btn btn-no" onclick="ltActivityRows.splice('+i+',1);renderLtActivityRows()">Remove</button>'+
+      '</div>';
+  }).join('');
+}
+function ltActivityOptionChange(i, sel) {
+  if (sel.value === '__add__') addOptionThen('ActivityType', function(v){ ltActivityRows[i].ActivityType=v; renderLtActivityRows(); });
+  else ltActivityRows[i].ActivityType = sel.value;
+}
+function ltAddActivityRow() { ltActivityRows.push({ ActivityType:'', HoursLogged:'', WorkDescription:'' }); renderLtActivityRows(); }
+function submitDay() {
+  var date = document.getElementById('ltDate').value;
+  if (!date) { toast('Pick a date first.','err'); return; }
+  var entries = ltProjRows.filter(function(r){ return r.ProjectID && r.TaskNo && r.HoursLogged; });
+  var activities = ltActivityRows.filter(function(r){ return r.ActivityType && r.HoursLogged; });
+  if (!entries.length && !activities.length) { toast('Add at least one project entry or activity with hours.','err'); return; }
+  api({ action:'submitDayTimesheet', date: date, entries: JSON.stringify(entries), activities: JSON.stringify(activities) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Day submitted for approval.','ok');
+    ltLoadDay();
+  });
+}
+
+/* ===================== MY TIMESHEET ===================== */
+function loadMyTimesheets() {
+  var date = document.getElementById('mtDate') ? document.getElementById('mtDate').value : '';
+  api({ action:'getMyTimesheets', date: date }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var entries = res.entries||[];
+    var pending = entries.filter(function(e){return e.Status==='PENDING';}).length;
+    var approvedHrs = entries.filter(function(e){return e.Status==='APPROVED';}).reduce(function(s,e){return s+(Number(e.HoursLogged)||0);},0);
+    document.getElementById('mtStats').innerHTML =
+      '<div class="sc"><div class="sl">Total Entries</div><div class="sv">'+entries.length+'</div></div>'+
+      '<div class="sc"><div class="sl">Pending</div><div class="sv amber">'+pending+'</div></div>'+
+      '<div class="sc"><div class="sl">Approved Hours</div><div class="sv green">'+approvedHrs+'</div></div>';
+    var body = document.getElementById('mtBody');
+    if (!entries.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty">No entries yet.</div></td></tr>'; return; }
+    body.innerHTML = entries.map(function(e){
+      var proj = e.EntryType==='ACTIVITY' ? (e.ProjectName||'Other Activity') : nc(e.ProjectName,e.ProjectID);
+      return '<tr><td>'+fmtD(e.EntryDate)+'</td><td>'+proj+'</td><td>'+(e.EntryType==='ACTIVITY'?'-':nc(e.TaskDescription,e.TaskNo))+'</td><td>'+e.HoursLogged+'</td><td>'+(e.WorkDescription||'-')+'</td><td>'+statusBadge(e.Status)+'</td></tr>';
+    }).join('');
+  });
+}
+
+/* ===================== APPROVALS ===================== */
+var apCurStatus = 'PENDING';
+function apTab(status) {
+  apCurStatus = status;
+  document.getElementById('apt1').className = status==='PENDING' ? 'tbb on' : 'tbb';
+  document.getElementById('apt2').className = status==='' ? 'tbb on' : 'tbb';
+  document.getElementById('apTitle').textContent = status==='PENDING' ? 'Pending Approvals' : 'All Team Entries';
+  loadApprovals();
+}
+function loadApprovals() {
+  var date = document.getElementById('apDate') ? document.getElementById('apDate').value : '';
+  api({ action:'getTeamTimesheets', status: apCurStatus, date: date }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var entries = res.entries||[];
+    var body = document.getElementById('apBody');
+    document.getElementById('apSelectAll').checked = false;
+    updateApBulkBar();
+    if (!entries.length) { body.innerHTML = '<tr><td colspan="9"><div class="empty">Nothing here.</div></td></tr>'; return; }
+    body.innerHTML = entries.map(function(e){
+      var proj = e.EntryType==='ACTIVITY' ? (e.ProjectName||'Other Activity') : nc(e.ProjectName,e.ProjectID);
+      var canDecideRow = (e.Status==='PENDING' && e.CanApprove);
+      var checkbox = canDecideRow ? '<input type="checkbox" class="apRowCheck" value="'+e.EntryID+'" onchange="updateApBulkBar()">' : '';
+      var actions = canDecideRow
+        ? '<button class="btn btn-ok" onclick="decide(\''+e.EntryID+'\',\'approve\')">Approve</button><button class="btn btn-no" onclick="decide(\''+e.EntryID+'\',\'reject\')">Reject</button>'
+        : (e.Status==='PENDING' ? '<span style="font-size:11px;color:var(--muted)">Awaiting their manager</span>' : '-');
+      return '<tr><td>'+checkbox+'</td><td>'+ncLink(e.EmployeeName,e.EmployeeID,e.EmployeeID)+'</td><td>'+fmtD(e.EntryDate)+'</td><td>'+proj+'</td><td>'+(e.EntryType==='ACTIVITY'?'-':nc(e.TaskDescription,e.TaskNo))+'</td><td>'+e.HoursLogged+'</td><td>'+(e.WorkDescription||'-')+'</td><td>'+statusBadge(e.Status)+'</td><td>'+actions+'</td></tr>';
+    }).join('');
+  });
+}
+function apToggleAll(cb) {
+  document.querySelectorAll('.apRowCheck').forEach(function(el){ el.checked = cb.checked; });
+  updateApBulkBar();
+}
+function updateApBulkBar() {
+  var checked = document.querySelectorAll('.apRowCheck:checked').length;
+  document.getElementById('apBulkBar').style.display = checked ? '' : 'none';
+}
+function bulkDecide(decision) {
+  var ids = Array.prototype.map.call(document.querySelectorAll('.apRowCheck:checked'), function(el){ return el.value; });
+  if (!ids.length) return;
+  api({ action:'decideTimesheetBulk', entryIds: JSON.stringify(ids), decision: decision }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast((decision==='approve'?'Approved ':'Rejected ')+res.done+' entr'+(res.done===1?'y':'ies')+'.','ok');
+    loadApprovals();
+  });
+}
+function decide(entryId, decision) {
+  api({ action:'decideTimesheet', entryId: entryId, decision: decision }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast(decision==='approve' ? 'Approved.' : 'Rejected.','ok');
+    loadApprovals();
+  });
+}
+
+/* ===================== COST DETAILS ===================== */
+function costDetailsInit() {
+  api({ action:'getProjects' }, function(res){
+    allProjects = res.projects||[];
+    var sel = document.getElementById('cdProjSel');
+    sel.innerHTML = allProjects.map(function(p){ return '<option value="'+p.ProjectID+'">'+p.ProjectName+'</option>'; }).join('');
+    if (allProjects.length) loadCostEntries();
+  });
+  loadOptionLists();
+}
+var curProjectWorkTypes = [];
+function loadCostEntries() {
+  var pid = document.getElementById('cdProjSel').value;
+  if (!pid) return;
+  api({ action:'getCostEntries', projectId: pid }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.entries||[];
+    var body = document.getElementById('cdBody');
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="7"><div class="empty">No cost entries yet.</div></td></tr>'; return; }
+    body.innerHTML = rows.map(function(r){
+      var canDecide = (sess.role==='BU_HEAD' || sess.role==='ADMIN') && r.Status==='PENDING';
+      var actions = canDecide
+        ? '<button class="btn btn-ok" onclick="decideCost(\''+r.CostID+'\',\'approve\')">Approve</button><button class="btn btn-no" onclick="decideCost(\''+r.CostID+'\',\'reject\')">Reject</button>'
+        : '-';
+      return '<tr><td>'+fmtD(r.EntryDate)+'</td><td>'+(r.Category||'-')+'</td><td class="amt">'+fmtA(r.Amount)+'</td><td>'+(r.Description||'-')+'</td><td>'+ncLink(r.EnteredByName,null,r.EnteredByUserID)+'</td><td>'+statusBadge(r.Status)+'</td><td>'+actions+'</td></tr>';
+    }).join('');
+  });
+  // Categories are drawn from this project's own budget Work Types, so cost
+  // tracking rolls up against the same buckets that were planned.
+  api({ action:'getProjectBudget', projectId: pid }, function(res){
+    var seen = {};
+    curProjectWorkTypes = (res.plan||[]).map(function(t){ return t.WorkType; }).filter(function(w){ return w && !seen[w] && (seen[w]=true); });
+  });
+}
+function openCostModal() {
+  var pid = document.getElementById('cdProjSel').value;
+  if (!pid) { toast('Select a project first.','err'); return; }
+  document.getElementById('cdAmount').value=''; document.getElementById('cdDescription').value='';
+  document.getElementById('cdDate').value = new Date().toISOString().slice(0,10);
+  var sel = document.getElementById('cdCategory');
+  if (curProjectWorkTypes.length) {
+    sel.innerHTML = '<option value="">— Select —</option>' + curProjectWorkTypes.map(function(w){ return '<option value="'+w+'">'+w+'</option>'; }).join('');
+  } else {
+    // Fallback for a project with no budget lines yet — a plain list, no add-new
+    loadOptionLists(function(){
+      sel.innerHTML = '<option value="">— Select —</option>' + (optionLists.CostCategory||[]).map(function(w){ return '<option value="'+w+'">'+w+'</option>'; }).join('');
+    });
+  }
+  document.getElementById('costOverlay').className='overlay on';
+}
+function closeCostModal(){ document.getElementById('costOverlay').className='overlay'; }
+function saveCostEntry() {
+  var pid = document.getElementById('cdProjSel').value;
+  var data = {
+    ProjectID: pid,
+    Category: document.getElementById('cdCategory').value,
+    Amount: document.getElementById('cdAmount').value,
+    EntryDate: document.getElementById('cdDate').value,
+    Description: document.getElementById('cdDescription').value
+  };
+  if (!data.Amount) { toast('Amount is required.','err'); return; }
+  api({ action:'addCostEntry', data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Cost entry saved.','ok');
+    closeCostModal();
+    loadCostEntries();
+  });
+}
+function decideCost(costId, decision) {
+  api({ action:'decideCostEntry', costId: costId, decision: decision }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast(decision==='approve'?'Approved.':'Rejected.','ok');
+    loadCostEntries();
+  });
+}
+
+/* ===================== PROJECTS ===================== */
+function loadProjects() {
+  api({ action:'getProjects' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    allProjects = res.projects||[];
+    var body = document.getElementById('prjBody');
+    if (!allProjects.length) { body.innerHTML = '<tr><td colspan="8"><div class="empty">No projects yet.</div></td></tr>'; return; }
+    body.innerHTML = allProjects.map(function(p){
+      var editBtn = canEditBudget ? '<button class="btn" onclick="openProjForm(\''+p.ProjectID+'\')">Edit</button>' : '';
+      return '<tr><td>'+nc(p.ProjectName,p.ProjectID)+'</td><td>'+(p.Customer||'-')+'</td><td>'+(p.BU||'-')+'</td><td>'+(p.ManagerNames||'-')+'</td><td>'+statusBadge(p.Status)+'</td><td class="amt">'+fmtA(p.TotalBudgetRevenue)+'</td><td class="amt">'+fmtA(p.TotalBudgetCost)+'</td><td>'+editBtn+'<button class="btn" onclick="go(\'budget\');setTimeout(function(){document.getElementById(\'budProjSel\').value=\''+p.ProjectID+'\';loadBudget();},300)">View Budget</button></td></tr>';
+    }).join('');
+  });
+}
+
+/* ===================== SHARED: user options + user-extendable dropdown options ===================== */
+var userOptions = [];
+function loadUserOptions(cb) {
+  api({ action:'getUserOptions' }, function(res){
+    userOptions = res.users || [];
+    if (cb) cb();
+  });
+}
+function fillUserSelect(sel, placeholder, roles, bu) {
+  var opts = userOptions;
+  if (roles) opts = opts.filter(function(u){ return roles.indexOf(u.Role)>=0; });
+  if (bu) opts = opts.filter(function(u){ return u.BU === bu; });
+  var cur = sel.value;
+  sel.innerHTML = '<option value="">'+placeholder+'</option>' + opts.map(function(u){ return '<option value="'+u.UserID+'">'+u.Name+' ('+u.UserID+')</option>'; }).join('');
+  if (cur) sel.value = cur;
+}
+
+var optionLists = { BillType:[], WorkType:[], Industry:[], Organization:[], BU:[] };
+function loadOptionLists(cb) {
+  api({ action:'getOptionLists' }, function(res){
+    if (res.options) optionLists = res.options;
+    if (cb) cb();
+  });
+}
+/** Renders a plain <select> (no add-new) from optionLists[listKey]. */
+function fillOptionSelect(sel, listKey, selected) {
+  var cur = selected !== undefined ? selected : sel.value;
+  var opts = (optionLists[listKey]||[]);
+  sel.innerHTML = '<option value="">— Select —</option>' +
+    opts.map(function(o){ return '<option value="'+o+'"'+(o===cur?' selected':'')+'>'+o+'</option>'; }).join('') +
+    '<option value="__add__">+ Add new...</option>';
+  sel.value = cur || '';
+}
+/** onchange handler for an editable option <select> — offers "+ Add new..." inline. */
+function onOptionSelectChange(sel, listKey) {
+  if (sel.value === '__add__') {
+    var val = window.prompt('Add a new ' + listKey + ':');
+    if (!val) { sel.value = sel.getAttribute('data-prev')||''; return; }
+    api({ action:'addOption', listName: listKey, value: val }, function(res){
+      if (res.error) { toast(res.error,'err'); sel.value = sel.getAttribute('data-prev')||''; return; }
+      optionLists[listKey] = res.options;
+      fillOptionSelect(sel, listKey, val);
+      sel.setAttribute('data-prev', val);
+      if (listKey === 'BU') refreshTeamOptionsForBUIfPresent_(val);
+    });
+  } else {
+    sel.setAttribute('data-prev', sel.value);
+  }
+}
+function onBUOptionChange(sel) {
+  onOptionSelectChange(sel, 'BU');
+  if (sel.id === 'pfBU') refreshTeamOptionsForBUIfPresent_(sel.value);
+}
+function refreshTeamOptionsForBUIfPresent_(bu) {
+  if (document.getElementById('pfManagers')) refreshTeamOptionsForBU(bu);
+}
+
+/* ===================== PROJECT FORM (Add / Edit) ===================== */
+var editingProjectId = null;
+function openProjForm(projectId) {
+  editingProjectId = projectId || null;
+  go('project-form');
+}
+function projFormInit() {
+  // Always refetch fresh (rather than trusting whatever last populated the
+  // shared allProjects array) so Edit never shows stale/blank data on first click.
+  api({ action:'getProjects' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    allProjects = res.projects || [];
+    var p = editingProjectId ? allProjects.filter(function(x){ return String(x.ProjectID)===String(editingProjectId); })[0] : null;
+
+    document.getElementById('pfProjectID').value = p ? p.ProjectID : '';
+    document.getElementById('pfProjectID').disabled = !!p;
+    document.getElementById('pfProjectName').value = p ? p.ProjectName : '';
+    document.getElementById('pfCustomer').value = p ? (p.Customer||'') : '';
+    document.getElementById('pfStatus').value = p ? p.Status : 'YET_TO_START';
+    document.getElementById('pfQuoteNumber').value = p ? (p.QuoteNumber||'') : '';
+    document.getElementById('pfStart').value = p ? toDateInput_(p.StartDate) : '';
+    document.getElementById('pfEnd').value = p ? toDateInput_(p.EndDate) : '';
+    document.getElementById('pfDescription').value = p ? (p.ProjectDescription||'') : '';
+    document.getElementById('pfShipTo').value = p ? (p.ShipTo||'') : '';
+    document.getElementById('pfContactName').value = p ? (p.ContactName||'') : '';
+    document.getElementById('pfContactEmail').value = p ? (p.ContactEmail||'') : '';
+    document.getElementById('pfBillingAddress').value = p ? (p.BillingAddress||'') : '';
+    document.getElementById('pfBUHeadDisplay').value = sess.role==='BU_HEAD' ? sess.name : (p && p.BUHeadName ? p.BUHeadName : '(auto-assigned from BU)');
+
+    // Chain the rest deterministically: options -> users -> team, so nothing
+    // renders against half-loaded global state.
+    loadOptionLists(function(){
+      fillOptionSelect(document.getElementById('pfIndustry'), 'Industry', p ? p.Industry : '');
+      fillOptionSelect(document.getElementById('pfOrganization'), 'Organization', p ? p.Organization : '');
+      var buSel = document.getElementById('pfBU');
+      if (sess.role === 'BU_HEAD') {
+        buSel.innerHTML = '<option>'+sess.bu+'</option>';
+        buSel.disabled = true;
+      } else {
+        buSel.disabled = false;
+        fillOptionSelect(buSel, 'BU', p ? p.BU : '');
+      }
+
+      loadUserOptions(function(){
+        var bu = sess.role==='BU_HEAD' ? sess.bu : (p ? p.BU : '');
+        fillUserSelect(document.getElementById('pfDirector'), 'Select director', ['MANAGEMENT']);
+        if (p) document.getElementById('pfDirector').value = p.DirectorID || '';
+        refreshTeamOptionsForBU(bu);
+
+        if (p) {
+          api({ action:'getProjectTeam', projectId: p.ProjectID }, function(teamRes){
+            if (teamRes.error) { toast('Could not load saved team: '+teamRes.error,'err'); return; }
+            var mgrIds = (teamRes.managers||[]).map(function(m){ return m.UserID; });
+            var empIds = (teamRes.employees||[]).map(function(e){ return e.UserID; });
+            if (!mgrIds.length && !empIds.length) toast('No team members are on record for this project in Project_Team.','err');
+            selectMultipleValues_(document.getElementById('pfManagers'), mgrIds);
+            selectMultipleValues_(document.getElementById('pfEmployees'), empIds);
+          });
+        }
+      });
+    });
+  });
+}
+function refreshTeamOptionsForBU(bu) {
+  var mgrOpts = userOptions.filter(function(u){ return u.Role==='MANAGER' && (!bu || u.BU===bu); });
+  var empOpts = userOptions.filter(function(u){ return u.Role==='EMPLOYEE'; });
+  var mgrSel = document.getElementById('pfManagers'), empSel = document.getElementById('pfEmployees');
+  mgrSel.innerHTML = mgrOpts.length ? mgrOpts.map(function(u){ return '<option value="'+u.UserID+'">'+u.Name+' ('+u.UserID+')</option>'; }).join('')
+    : '<option value="" disabled>No Managers found'+(bu?' for '+bu:'')+' — ask your Admin to create one</option>';
+  empSel.innerHTML = empOpts.length ? empOpts.map(function(u){ return '<option value="'+u.UserID+'">'+u.Name+' ('+u.UserID+')</option>'; }).join('')
+    : '<option value="" disabled>No Employees found — ask your Admin to create one</option>';
+}
+function selectMultipleValues_(sel, values) {
+  Array.prototype.forEach.call(sel.options, function(o){ o.selected = values.indexOf(o.value) !== -1; });
+}
+function toDateInput_(d){ if(!d) return ''; try{ var dt=new Date(d); if(isNaN(dt.getTime())) return ''; return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }catch(e){ return ''; } }
+function saveProjectForm() {
+  var managerIds = Array.prototype.filter.call(document.getElementById('pfManagers').options, function(o){ return o.selected; }).map(function(o){ return o.value; });
+  var employeeIds = Array.prototype.filter.call(document.getElementById('pfEmployees').options, function(o){ return o.selected; }).map(function(o){ return o.value; });
+  var data = {
+    ProjectID: document.getElementById('pfProjectID').value.trim(),
+    ProjectName: document.getElementById('pfProjectName').value,
+    Customer: document.getElementById('pfCustomer').value,
+    BU: document.getElementById('pfBU').value,
+    Status: document.getElementById('pfStatus').value,
+    Industry: document.getElementById('pfIndustry').value,
+    Organization: document.getElementById('pfOrganization').value,
+    QuoteNumber: document.getElementById('pfQuoteNumber').value,
+    StartDate: document.getElementById('pfStart').value,
+    EndDate: document.getElementById('pfEnd').value,
+    ProjectDescription: document.getElementById('pfDescription').value,
+    ShipTo: document.getElementById('pfShipTo').value,
+    ContactName: document.getElementById('pfContactName').value,
+    ContactEmail: document.getElementById('pfContactEmail').value,
+    BillingAddress: document.getElementById('pfBillingAddress').value,
+    DirectorID: document.getElementById('pfDirector').value
+  };
+  if (!data.ProjectID) { toast('Project ID is required.','err'); return; }
+  if (!data.ProjectName) { toast('Project name is required.','err'); return; }
+  if (!managerIds.length) { toast('Select at least one Manager for this project.','err'); return; }
+  if (!employeeIds.length) { toast('Select at least one Employee for this project.','err'); return; }
+  api({ action:'saveProject', data: JSON.stringify(data), managerIds: JSON.stringify(managerIds), employeeIds: JSON.stringify(employeeIds), mode: editingProjectId ? 'edit' : 'create' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast(editingProjectId ? 'Project updated.' : 'Project created.','ok');
+    go('projects');
+  });
+}
+
+/* ===================== BUDGET: PLAN ===================== */
+var budEditing = false;
+var curPlan = [];      // last loaded plan rows (read mode)
+var curPhasing = [];   // last loaded phasing rows
+var curInvoicing = []; // last loaded invoicing rows
+var curProjectId = null;
+var canEditBudget = (sess.role === 'ADMIN' || sess.role === 'BU_HEAD');
+
+function budInit() {
+  if (!canEditBudget) document.getElementById('budEditBtn').style.display = 'none';
+  var sel = document.getElementById('budProjSel');
+  api({ action:'getProjects' }, function(res){
+    allProjects = res.projects||[];
+    sel.innerHTML = allProjects.map(function(p){ return '<option value="'+p.ProjectID+'">'+p.ProjectName+'</option>'; }).join('');
+    if (allProjects.length) loadBudget();
+  });
+  loadUserOptions();
+  loadOptionLists();
+}
+function onBudProjChange() { budEditing = false; loadBudget(); }
+function budTab(which) {
+  document.getElementById('budt1').className = which==='plan' ? 'tbb on' : 'tbb';
+  document.getElementById('budt2').className = which==='phasing' ? 'tbb on' : 'tbb';
+  document.getElementById('budt3').className = which==='invoicing' ? 'tbb on' : 'tbb';
+  document.getElementById('budPlanSection').style.display = which==='plan' ? '' : 'none';
+  document.getElementById('budPhasingSection').style.display = which==='phasing' ? '' : 'none';
+  document.getElementById('budInvoicingSection').style.display = which==='invoicing' ? '' : 'none';
+  var actionBar = document.getElementById('budActionBar');
+  if (which==='plan') {
+    actionBar.innerHTML = canEditBudget ? '<button class="bsec" id="budEditBtn" onclick="toggleBudgetEdit()">'+(budEditing?'Cancel Edit':'Edit / Revise')+'</button>' : '';
+  } else if (which==='phasing') {
+    actionBar.innerHTML = canEditBudget ? '<button class="bpri" onclick="savePhasing()">Save Phasing</button>' : '';
+    renderPhasing();
+  } else if (which==='invoicing') {
+    actionBar.innerHTML = canEditBudget ? '<button class="ghost" onclick="invAddRow()">+ Add Row</button> <button class="bpri" onclick="saveInvoicing()">Save Schedule</button>' : '';
+    loadInvoicing();
+  }
+}
+function loadBudget() {
+  var pid = document.getElementById('budProjSel').value;
+  if (!pid) return;
+  curProjectId = pid;
+  api({ action:'getProjectBudget', projectId: pid }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    curPlan = res.plan||[];
+    curPhasing = res.phasing||[];
+    renderBudgetReadOnly();
+    var rev = res.revisions||[];
+    var revBody = document.getElementById('revBody');
+    revBody.innerHTML = rev.length ? rev.map(function(r){ return '<tr><td>'+r.RevisionNo+'</td><td>'+nc(r.ChangedByName,r.ChangedByUserID)+'</td><td>'+fmtD(r.ChangedDate)+'</td><td>'+r.ChangeSummary+'</td></tr>'; }).join('') : '<tr><td colspan="4"><div class="empty">No revisions yet</div></td></tr>';
+    if (document.getElementById('budPhasingSection').style.display !== 'none') renderPhasing();
+  });
+}
+function renderBudgetReadOnly() {
+  var body = document.getElementById('budBody');
+  if (!curPlan.length) { body.innerHTML = '<tr><td colspan="11"><div class="empty">No budget lines yet'+(canEditBudget?' — click Edit / Revise to add some.':'.')+'</div></td></tr>'; return; }
+  body.innerHTML = curPlan.map(function(t){
+    var over = Number(t.ActualHours) > Number(t.BudgetHours);
+    return '<tr><td>'+nc(t.TaskDescription,t.TaskNo)+'</td><td>'+(t.WorkType||'-')+'</td><td>'+(t.BillType||'-')+'</td><td>'+fmtA(t.BillRate)+'</td><td>'+fmtA(t.CostRate)+'</td><td>'+t.BudgetHours+'</td><td class="'+(over?'sv red':'')+'" style="font-size:13px">'+t.ActualHours+'</td><td class="amt">'+fmtA(t.BudgetRevenue)+'</td><td class="amt">'+fmtA(t.BudgetCost)+'</td><td>'+(Number(t.MarginPct)*100).toFixed(1)+'%</td><td>'+(t.AssignedToName?nc(t.AssignedToName,t.AssignedToUserID):'-')+'</td></tr>';
+  }).join('');
+}
+
+/* ---- edit mode: turn the plan table into editable rows ---- */
+var editRows = [];
+function toggleBudgetEdit() {
+  if (!curProjectId) { toast('Select a project first.','err'); return; }
+  budEditing = !budEditing;
+  document.getElementById('budEditBtn').textContent = budEditing ? 'Cancel Edit' : 'Edit / Revise';
+  if (budEditing) {
+    editRows = curPlan.map(function(t){ return {
+      TaskNo:t.TaskNo, TaskDescription:t.TaskDescription, WorkType:t.WorkType, BillType:t.BillType,
+      BillRate:t.BillRate, CostRate:t.CostRate, BudgetHours:t.BudgetHours, AssignedToUserID:t.AssignedToUserID
+    };});
+    api({ action:'getProjectTeam', projectId: curProjectId }, function(res){
+      if (res.error) { toast('Could not load project team: '+res.error,'err'); curTeamOptions = []; renderBudgetEdit(); return; }
+      var team = (res.managers||[]).concat(res.employees||[]);
+      curTeamOptions = team.map(function(t){ return { UserID: t.UserID, Name: t.UserName||t.UserID }; });
+      if (!curTeamOptions.length) toast('No team members found for this project — check Project_Team in the sheet.','err');
+      renderBudgetEdit();
+    });
+  } else {
+    renderBudgetReadOnly();
+  }
+}
+var curTeamOptions = [];
+function optionsHtml_(listKey, selected) {
+  return '<option value="">— Select —</option>' +
+    (optionLists[listKey]||[]).map(function(o){ return '<option value="'+o+'"'+(o===selected?' selected':'')+'>'+o+'</option>'; }).join('') +
+    '<option value="__add__">+ Add new...</option>';
+}
+function budRowOptionChange(i, sel, listKey) {
+  if (sel.value === '__add__') {
+    addOptionThen(listKey, function(v){ editRows[i][listKey] = v; renderBudgetEdit(); });
+  } else {
+    editRows[i][listKey] = sel.value;
+  }
+}
+function addOptionThen(listKey, cb) {
+  var val = window.prompt('Add a new ' + listKey + ':');
+  if (!val) return;
+  api({ action:'addOption', listName: listKey, value: val }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    optionLists[listKey] = res.options;
+    cb(val);
+  });
+}
+function renderBudgetEdit() {
+  var userOpts = curTeamOptions.map(function(u){ return '<option value="'+u.UserID+'">'+u.Name+'</option>'; }).join('');
+  var rowsHtml = editRows.map(function(r, i){
+    return '<tr>'+
+      '<td><input style="width:70px" value="'+(r.TaskNo||'')+'" onchange="editRows['+i+'].TaskNo=this.value"></td>'+
+      '<td><input style="width:160px" value="'+(r.TaskDescription||'')+'" onchange="editRows['+i+'].TaskDescription=this.value"></td>'+
+      '<td><select onchange="budRowOptionChange('+i+',this,\'WorkType\')">'+optionsHtml_('WorkType', r.WorkType)+'</select></td>'+
+      '<td><select onchange="budRowOptionChange('+i+',this,\'BillType\')">'+optionsHtml_('BillType', r.BillType)+'</select></td>'+
+      '<td><input type="number" style="width:80px" value="'+(r.BillRate||0)+'" onchange="editRows['+i+'].BillRate=this.value"></td>'+
+      '<td><input type="number" style="width:80px" value="'+(r.CostRate||0)+'" onchange="editRows['+i+'].CostRate=this.value"></td>'+
+      '<td><input type="number" style="width:80px" value="'+(r.BudgetHours||0)+'" onchange="editRows['+i+'].BudgetHours=this.value"></td>'+
+      '<td><select onchange="editRows['+i+'].AssignedToUserID=this.value"><option value="">-</option>'+userOpts.replace('value="'+r.AssignedToUserID+'"','value="'+r.AssignedToUserID+'" selected')+'</select></td>'+
+      '<td><button class="btn btn-no" onclick="editRows.splice('+i+',1);renderBudgetEdit()">Remove</button></td>'+
+      '</tr>';
+  }).join('');
+  var body = document.getElementById('budBody');
+  body.innerHTML = '<tr><td colspan="11" style="padding:0">'+
+    '<table style="width:100%"><thead><tr><th>Task#</th><th>Description</th><th>Work Type</th><th>Bill Type</th><th>Bill Rate</th><th>Cost Rate</th><th>Budget Hrs</th><th>Assigned To</th><th></th></tr></thead>'+
+    '<tbody>'+rowsHtml+'</tbody></table>'+
+    '<div style="padding:12px 18px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+      '<button class="ghost" onclick="addEditRow()">+ Add Task</button>'+
+      '<input id="revisionReason" placeholder="Reason for this revision (required)" style="flex:1;min-width:220px;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px">'+
+      '<button class="bpri" onclick="saveBudgetRevision()">Save Revision</button>'+
+    '</div>'+
+    '</td></tr>';
+}
+function addEditRow() {
+  editRows.push({ TaskNo:'', TaskDescription:'', WorkType:'', BillType:'FXD', BillRate:0, CostRate:0, BudgetHours:0, AssignedToUserID:'' });
+  renderBudgetEdit();
+}
+function saveBudgetRevision() {
+  var reason = document.getElementById('revisionReason').value.trim();
+  if (!reason) { toast('Please enter a reason for this revision.','err'); return; }
+  if (!editRows.length) { toast('Add at least one task line.','err'); return; }
+  for (var i=0;i<editRows.length;i++) {
+    if (!editRows[i].TaskNo || !editRows[i].TaskDescription) { toast('Every row needs a Task# and Description.','err'); return; }
+  }
+  api({ action:'saveBudgetPlan', projectId: curProjectId, data: JSON.stringify(editRows), reason: reason }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Budget plan revised (Revision '+res.revision+').','ok');
+    budEditing = false;
+    document.getElementById('budEditBtn').textContent = 'Edit / Revise';
+    loadProjects();
+    loadBudget();
+  });
+}
+
+/* ===================== BUDGET: MONTHLY PHASING ===================== */
+var phMonths = [];
+function monthsBetween_(start, end) {
+  var months = [];
+  if (!start || !end) return months;
+  var d = new Date(start); d.setDate(1);
+  var e = new Date(end);
+  while (d <= e && months.length < 36) {
+    months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+    d.setMonth(d.getMonth()+1);
+  }
+  return months;
+}
+function renderPhasing() {
+  var proj = allProjects.filter(function(p){ return String(p.ProjectID)===String(curProjectId); })[0];
+  var base = proj ? monthsBetween_(proj.StartDate, proj.EndDate) : [];
+  var extra = {};
+  curPhasing.forEach(function(r){ extra[r.Month] = true; });
+  base.forEach(function(m){ extra[m] = true; });
+  phMonths = Object.keys(extra).sort();
+  if (!phMonths.length) phMonths = [new Date().toISOString().slice(0,7)];
+
+  // Build a lookup: TaskNo -> Month -> hours
+  var grid = {};
+  curPlan.forEach(function(t){ grid[t.TaskNo] = {}; });
+  curPhasing.forEach(function(r){
+    if (!grid[r.TaskNo]) grid[r.TaskNo] = {};
+    grid[r.TaskNo][r.Month] = r.BudgetHours;
+  });
+  window._phGrid = grid;
+
+  var head = document.getElementById('phHeadRow');
+  head.innerHTML = '<th>Task</th>' + phMonths.map(function(m){ return '<th>'+m+'</th>'; }).join('') + '<th>Total</th>';
+
+  var body = document.getElementById('phBody');
+  if (!curPlan.length) { body.innerHTML = '<tr><td><div class="empty">Add budget lines first (Budget Plan tab).</div></td></tr>'; return; }
+  body.innerHTML = curPlan.map(function(t){
+    var rowTotal = phMonths.reduce(function(s,m){ return s + (Number(grid[t.TaskNo][m])||0); }, 0);
+    var cells = phMonths.map(function(m){
+      var v = grid[t.TaskNo][m] || '';
+      return '<td><input type="number" min="0" step="0.5" style="width:70px" value="'+v+'" onchange="phSet(\''+t.TaskNo+'\',\''+m+'\',this.value)"></td>';
+    }).join('');
+    return '<tr><td>'+nc(t.TaskDescription,t.TaskNo)+'</td>'+cells+'<td class="amt" id="phTot_'+t.TaskNo+'">'+rowTotal+'</td></tr>';
+  }).join('');
+}
+function phSet(taskNo, month, val) {
+  window._phGrid[taskNo][month] = Number(val)||0;
+  var total = phMonths.reduce(function(s,m){ return s + (Number(window._phGrid[taskNo][m])||0); }, 0);
+  document.getElementById('phTot_'+taskNo).textContent = total;
+}
+function phAddMonth() {
+  var last = phMonths.length ? phMonths[phMonths.length-1] : new Date().toISOString().slice(0,7);
+  var d = new Date(last+'-01'); d.setMonth(d.getMonth()+1);
+  var next = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  if (phMonths.indexOf(next) === -1) { phMonths.push(next); phMonths.sort(); renderPhasing(); }
+}
+function savePhasing() {
+  if (!canEditBudget) { toast('You do not have access to edit phasing.','err'); return; }
+  var rows = [];
+  curPlan.forEach(function(t){
+    phMonths.forEach(function(m){
+      var hrs = (window._phGrid[t.TaskNo]||{})[m];
+      if (hrs) rows.push({ TaskNo:t.TaskNo, Month:m, BudgetHours:hrs });
+    });
+  });
+  api({ action:'saveBudgetPhasing', projectId: curProjectId, data: JSON.stringify(rows) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Monthly phasing saved.','ok');
+    loadBudget();
+  });
+}
+
+/* ===================== BUDGET: INVOICING SCHEDULE ===================== */
+function loadInvoicing() {
+  if (!curProjectId) return;
+  api({ action:'getInvoicingSchedule', projectId: curProjectId }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    curInvoicing = res.schedule || [];
+    renderInvoicing();
+  });
+}
+function renderInvoicing() {
+  var body = document.getElementById('invBody');
+  if (!curInvoicing.length) { body.innerHTML = '<tr><td colspan="6"><div class="empty">No invoicing milestones yet.</div></td></tr>'; return; }
+  body.innerHTML = curInvoicing.map(function(r, i){
+    if (!canEditBudget) {
+      return '<tr><td class="amt">'+fmtA(r.Amount)+'</td><td>'+fmtD(r.SchedDate)+'</td><td>'+(r.PaymentTerms||'-')+'</td><td>'+(r.Notes||'-')+'</td><td>'+statusBadge(r.InvoiceStatus||'NOT_RAISED')+'</td><td></td></tr>';
+    }
+    return '<tr>'+
+      '<td><input type="number" style="width:100px" value="'+(r.Amount||0)+'" onchange="curInvoicing['+i+'].Amount=this.value"></td>'+
+      '<td><input type="date" style="width:130px" value="'+toDateInput_(r.SchedDate)+'" onchange="curInvoicing['+i+'].SchedDate=this.value"></td>'+
+      '<td><input style="width:100px" value="'+(r.PaymentTerms||'')+'" onchange="curInvoicing['+i+'].PaymentTerms=this.value"></td>'+
+      '<td><input style="width:140px" value="'+(r.Notes||'')+'" onchange="curInvoicing['+i+'].Notes=this.value"></td>'+
+      '<td>'+statusBadge(r.InvoiceStatus||'NOT_RAISED')+'</td>'+
+      '<td><button class="btn btn-no" onclick="curInvoicing.splice('+i+',1);renderInvoicing()">Remove</button></td>'+
+      '</tr>';
+  }).join('');
+}
+function invAddRow() {
+  curInvoicing.push({ Amount:0, SchedDate:'', PaymentTerms:'', Notes:'' });
+  renderInvoicing();
+}
+function saveInvoicing() {
+  if (!canEditBudget) { toast('You do not have access to edit the invoicing schedule.','err'); return; }
+  api({ action:'saveInvoicingSchedule', projectId: curProjectId, data: JSON.stringify(curInvoicing) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Invoicing schedule saved.','ok');
+    loadInvoicing();
+  });
+}
+
+/* ===================== BU REPORT ===================== */
+function loadBUReport() {
+  api({ action:'getBUReport' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.report||[];
+    var totRev=0, totCost=0, totAct=0;
+    rows.forEach(function(r){ totRev+=Number(r.BudgetRevenue)||0; totCost+=Number(r.BudgetCost)||0; totAct+=Number(r.ActualCost)||0; });
+    document.getElementById('buStats').innerHTML =
+      '<div class="sc"><div class="sl">Budget Revenue</div><div class="sv">'+fmtA(totRev)+'</div></div>'+
+      '<div class="sc"><div class="sl">Budget Cost</div><div class="sv">'+fmtA(totCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Actual Cost</div><div class="sv amber">'+fmtA(totAct)+'</div></div>';
+    var body = document.getElementById('buBody');
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td><a href="javascript:void(0)" onclick="openProjectDetail(\''+r.ProjectID+'\')" style="color:var(--blue);font-weight:600;text-decoration:none">'+(r.ProjectName||r.ProjectID)+'</a></td><td>'+statusBadge(r.Status)+'</td><td class="amt">'+fmtA(r.BudgetRevenue)+'</td><td class="amt">'+fmtA(r.BudgetCost)+'</td><td class="amt">'+fmtA(r.ActualCost)+'</td><td class="amt '+(r.CostVariance<0?'sv red':'sv green')+'" style="font-size:13px">'+fmtA(r.CostVariance)+'</td></tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">No data.</div></td></tr>';
+  });
+}
+
+/* ===================== MANAGEMENT REPORT ===================== */
+function loadMgmtReport() {
+  api({ action:'getManagementReport' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.projects||[];
+    var totRev=0, totCost=0, totAct=0;
+    rows.forEach(function(r){ totRev+=Number(r.BudgetRevenue)||0; totCost+=Number(r.BudgetCost)||0; totAct+=Number(r.ActualCost)||0; });
+    document.getElementById('mgStats').innerHTML =
+      '<div class="sc"><div class="sl">Total Budget Revenue</div><div class="sv">'+fmtA(totRev)+'</div></div>'+
+      '<div class="sc"><div class="sl">Total Budget Cost</div><div class="sv">'+fmtA(totCost)+'</div></div>'+
+      '<div class="sc"><div class="sl">Total Actual Cost</div><div class="sv amber">'+fmtA(totAct)+'</div></div>'+
+      '<div class="sc"><div class="sl">Projected Margin</div><div class="sv green">'+fmtA(totRev-totCost)+'</div></div>';
+    var body = document.getElementById('mgBody');
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td><a href="javascript:void(0)" onclick="openProjectDetail(\''+r.ProjectID+'\')" style="color:var(--blue);font-weight:600;text-decoration:none">'+(r.ProjectName||r.ProjectID)+'</a></td><td>'+statusBadge(r.Status)+'</td><td class="amt">'+fmtA(r.BudgetRevenue)+'</td><td class="amt">'+fmtA(r.BudgetCost)+'</td><td class="amt">'+fmtA(r.ActualCost)+'</td><td class="amt">'+fmtA(r.CostVariance)+'</td></tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">No data.</div></td></tr>';
+  });
+}
+
+/* ===================== USERS ===================== */
+function loadUsers() {
+  api({ action:'getUsers' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var users = res.users||[];
+    var body = document.getElementById('usrBody');
+    body.innerHTML = users.length ? users.map(function(u){
+      return '<tr><td>'+ncLink(u.Name,u.UserID,u.UserID)+'</td><td>'+u.Email+'</td><td>'+u.Role+'</td><td>'+(u.BU||'-')+'</td><td>'+(u.ManagerID?nc(u.ManagerName,u.ManagerID):'-')+'</td><td>'+(String(u.Active).toUpperCase()==='TRUE'?'✅ Active':'❌ Inactive')+'</td><td><button class="btn" onclick=\'editUser('+JSON.stringify(u).replace(/'/g,"&#39;")+')\'>Edit</button></td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="empty">No users yet.</div></td></tr>';
+  });
+}
+
+/** Role -> the role their manager/approver should have. MANAGEMENT (and ADMIN) are top-level. */
+var MANAGER_ROLE_FOR = { EMPLOYEE:'MANAGER', MANAGER:'BU_HEAD', BU_HEAD:'MANAGEMENT' };
+
+var editingUserId = null;
+var ALL_ROLES = ['EMPLOYEE','MANAGER','BU_HEAD','ADMIN','MANAGEMENT','FINANCE','HR'];
+function buildRoleOptions(selected) {
+  var roles = (sess.role==='HR') ? ALL_ROLES.filter(function(r){ return r!=='ADMIN'; }) : ALL_ROLES;
+  return roles.map(function(r){ return '<option'+(r===selected?' selected':'')+'>'+r+'</option>'; }).join('');
+}
+function openUserModal(){
+  editingUserId=null;
+  document.getElementById('userModalTitle').textContent = 'New User';
+  document.getElementById('usUserID').value=''; document.getElementById('usUserID').disabled=false;
+  document.getElementById('usName').value=''; document.getElementById('usEmail').value='';
+  document.getElementById('usRole').innerHTML = buildRoleOptions('EMPLOYEE');
+  document.getElementById('usActive').value='TRUE';
+  document.getElementById('usPassword').value='';
+  document.getElementById('userOverlay').className='overlay on';
+  loadOptionLists(function(){ fillOptionSelect(document.getElementById('usBU'), 'BU', ''); });
+  loadUserOptions(function(){ onUserRoleChange(); });
+}
+function closeUserModal(){ document.getElementById('userOverlay').className='overlay'; }
+function editUser(u){
+  editingUserId = u.UserID;
+  document.getElementById('userModalTitle').textContent = 'Edit User';
+  document.getElementById('usUserID').value = u.UserID; document.getElementById('usUserID').disabled = true;
+  document.getElementById('usName').value = u.Name||'';
+  document.getElementById('usEmail').value = u.Email||'';
+  document.getElementById('usRole').innerHTML = buildRoleOptions(u.Role||'EMPLOYEE');
+  document.getElementById('usActive').value = (String(u.Active).toUpperCase()==='FALSE') ? 'FALSE' : 'TRUE';
+  document.getElementById('usPassword').value = '';
+  document.getElementById('userOverlay').className='overlay on';
+  loadOptionLists(function(){ fillOptionSelect(document.getElementById('usBU'), 'BU', u.BU||''); });
+  loadUserOptions(function(){
+    onUserRoleChange();
+    document.getElementById('usManager').value = u.ManagerID||'';
+  });
+}
+/** Cascades the "Reports To" dropdown: its options and label depend on the selected Role. */
+function onUserRoleChange() {
+  var role = document.getElementById('usRole').value;
+  var wrap = document.getElementById('usManagerWrap');
+  var sel = document.getElementById('usManager');
+  var targetRole = MANAGER_ROLE_FOR[role];
+  if (!targetRole) {
+    // MANAGEMENT / ADMIN — top level, no manager
+    wrap.style.display = 'none';
+    sel.innerHTML = '<option value="">No manager / top level</option>';
+    sel.value = '';
+  } else {
+    wrap.style.display = '';
+    document.getElementById('usManagerLabel').textContent = 'Reports To (' + RLABELS[targetRole] + ')';
+    fillUserSelect(sel, 'Select ' + RLABELS[targetRole].toLowerCase(), [targetRole]);
+  }
+}
+function saveUser() {
+  var userId = document.getElementById('usUserID').value.trim();
+  var data = {
+    UserID: userId,
+    Name: document.getElementById('usName').value,
+    Email: document.getElementById('usEmail').value,
+    Role: document.getElementById('usRole').value,
+    BU: document.getElementById('usBU').value,
+    ManagerID: document.getElementById('usManager').value,
+    Active: document.getElementById('usActive').value
+  };
+  var pw = document.getElementById('usPassword').value;
+  if (pw) data.Password = pw;
+  if (!userId) { toast('Employee/User ID is required.','err'); return; }
+  if (!data.Name || !data.Email) { toast('Name and email are required.','err'); return; }
+  api({ action:'saveUser', data: JSON.stringify(data), mode: editingUserId ? 'edit' : 'create' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('User saved.','ok');
+    closeUserModal();
+    loadUsers();
+  });
+}
+
+/* ===================== SETTINGS ===================== */
+function loadSettings() {
+  api({ action:'getConfig' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    document.getElementById('cfgCompanyName').value = res.config.CompanyName || '';
+    document.getElementById('cfgCurrency').value = res.config.CurrencySymbol || '';
+  });
+}
+function saveSettings() {
+  var data = { CompanyName: document.getElementById('cfgCompanyName').value, CurrencySymbol: document.getElementById('cfgCurrency').value };
+  api({ action:'saveConfig', data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Settings saved.','ok');
+    loadCompanyName();
+  });
+}
+
+/* ===================== FINANCE: INVOICING ===================== */
+var invCurFilter = 'all';
+function invoicingInit() { invCurFilter='all'; loadInvoicingForFinance(); }
+function openLogInvoiceModal() {
+  document.getElementById('liAmount').value=''; document.getElementById('liInvoiceNo').value='';
+  document.getElementById('liInvoiceDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('liPaymentTerms').value=''; document.getElementById('liDateReceived').value='';
+  document.getElementById('liAmountReceived').value=''; document.getElementById('liNotes').value='';
+  api({ action:'getProjects' }, function(res){
+    var projects = res.projects||[];
+    document.getElementById('liProject').innerHTML = '<option value="">Select project</option>' + projects.map(function(p){ return '<option value="'+p.ProjectID+'">'+p.ProjectName+'</option>'; }).join('');
+  });
+  document.getElementById('logInvoiceOverlay').className='overlay on';
+}
+function closeLogInvoiceModal(){ document.getElementById('logInvoiceOverlay').className='overlay'; }
+function saveLogInvoice() {
+  var data = {
+    ProjectID: document.getElementById('liProject').value,
+    Amount: document.getElementById('liAmount').value,
+    InvoiceDate: document.getElementById('liInvoiceDate').value,
+    InvoiceNo: document.getElementById('liInvoiceNo').value,
+    PaymentTerms: document.getElementById('liPaymentTerms').value,
+    DateReceived: document.getElementById('liDateReceived').value,
+    AmountReceived: document.getElementById('liAmountReceived').value,
+    Notes: document.getElementById('liNotes').value
+  };
+  if (!data.ProjectID) { toast('Select a project.','err'); return; }
+  if (!data.Amount) { toast('Amount is required.','err'); return; }
+  api({ action:'logInvoice', data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Invoice logged.','ok');
+    closeLogInvoiceModal();
+    loadInvoicingForFinance();
+  });
+}
+function invSetFilter(filter, btn) {
+  invCurFilter = filter;
+  document.querySelectorAll('#invFilterBar .tbb').forEach(function(b){ b.className='tbb'; });
+  btn.className = 'tbb on';
+  loadInvoicingForFinance();
+}
+var curInvoiceForModal = null;
+function loadInvoicingForFinance() {
+  api({ action:'getInvoicingForFinance', filter: invCurFilter }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.schedule||[];
+    var body = document.getElementById('invBody2');
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="9"><div class="empty">No invoicing milestones in this range.</div></td></tr>'; return; }
+    body.innerHTML = rows.map(function(r){
+      var actions = '';
+      if (r.InvoiceStatus==='NOT_RAISED') actions = '<button class="btn" onclick=\'openInvRaiseModal('+JSON.stringify(r).replace(/'/g,"&#39;")+')\'>Raise Invoice</button>';
+      else if (r.InvoiceStatus==='RAISED') actions = '<button class="btn btn-ok" onclick=\'openInvReceiveModal('+JSON.stringify(r).replace(/'/g,"&#39;")+')\'>Record Payment</button>';
+      else actions = '-';
+      return '<tr><td>'+(r.ProjectName||r.ProjectID)+'</td><td>'+fmtD(r.SchedDate)+'</td><td class="amt">'+fmtA(r.Amount)+'</td><td>'+(r.PaymentTerms||'-')+'</td><td>'+statusBadge(r.InvoiceStatus)+'</td><td>'+(r.InvoiceNo||'-')+'</td><td>'+(r.ActualAmount?fmtA(r.ActualAmount):'-')+'</td><td>'+(r.AmountReceived?fmtA(r.AmountReceived):'-')+'</td><td>'+actions+'</td></tr>';
+    }).join('');
+  });
+}
+function openInvRaiseModal(row) {
+  curInvoiceForModal = row;
+  document.getElementById('irInvoiceNo').value='';
+  document.getElementById('irInvoiceDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('irActualAmount').value = row.Amount||'';
+  document.getElementById('invRaiseOverlay').className='overlay on';
+}
+function closeInvRaiseModal(){ document.getElementById('invRaiseOverlay').className='overlay'; }
+function saveRaiseInvoice() {
+  var data = {
+    InvoiceNo: document.getElementById('irInvoiceNo').value,
+    InvoiceDate: document.getElementById('irInvoiceDate').value,
+    ActualAmount: document.getElementById('irActualAmount').value
+  };
+  if (!data.InvoiceNo) { toast('Invoice number is required.','err'); return; }
+  api({ action:'raiseInvoice', invoiceId: curInvoiceForModal.InvoiceID, data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Invoice raised.','ok');
+    closeInvRaiseModal();
+    loadInvoicingForFinance();
+  });
+}
+function openInvReceiveModal(row) {
+  curInvoiceForModal = row;
+  document.getElementById('irDateReceived').value = new Date().toISOString().slice(0,10);
+  document.getElementById('irAmountReceived').value = row.ActualAmount||row.Amount||'';
+  document.getElementById('invReceiveOverlay').className='overlay on';
+}
+function closeInvReceiveModal(){ document.getElementById('invReceiveOverlay').className='overlay'; }
+function saveRecordPayment() {
+  var data = {
+    DateReceived: document.getElementById('irDateReceived').value,
+    AmountReceived: document.getElementById('irAmountReceived').value
+  };
+  api({ action:'recordPaymentReceived', invoiceId: curInvoiceForModal.InvoiceID, data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Payment recorded.','ok');
+    closeInvReceiveModal();
+    loadInvoicingForFinance();
+  });
+}
+
+/* ===================== FINANCE: APPROVED COSTS ===================== */
+function loadApprovedCostsFinance() {
+  api({ action:'getApprovedCostsForFinance' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.costs||[];
+    var body = document.getElementById('acBody');
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td>'+nc(r.ProjectName,r.ProjectID)+'</td><td>'+fmtD(r.EntryDate)+'</td><td>'+(r.Category||'-')+'</td><td class="amt">'+fmtA(r.Amount)+'</td><td>'+(r.EnteredByName||r.EnteredByUserID)+'</td></tr>';
+    }).join('') : '<tr><td colspan="5"><div class="empty">No approved costs yet.</div></td></tr>';
+  });
+}
+
+/* ===================== HR: PAYROLL MASTER ===================== */
+function loadPayrollMaster() {
+  api({ action:'getPayrollMaster' }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.records||[];
+    var body = document.getElementById('pmBody');
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td>'+nc(r.EmployeeName,r.UserID)+'</td><td class="amt">'+fmtA(r.MonthlyCTC)+'</td><td>'+fmtD(r.EffectiveFrom)+'</td><td>'+(r.Notes||'-')+'</td><td><button class="btn" onclick=\'openPayrollMasterModal('+JSON.stringify(r).replace(/'/g,"&#39;")+')\'>Edit</button></td></tr>';
+    }).join('') : '<tr><td colspan="5"><div class="empty">No payroll records yet.</div></td></tr>';
+  });
+}
+function openPayrollMasterModal(r) {
+  loadUserOptions(function(){
+    fillUserSelect(document.getElementById('pmEmployee'), 'Select employee', ['EMPLOYEE','MANAGER','BU_HEAD','MANAGEMENT']);
+    if (r) document.getElementById('pmEmployee').value = r.UserID;
+  });
+  document.getElementById('pmCTC').value = r ? r.MonthlyCTC : '';
+  document.getElementById('pmEffective').value = r ? toDateInput_(r.EffectiveFrom) : '';
+  document.getElementById('pmNotes').value = r ? (r.Notes||'') : '';
+  document.getElementById('payrollMasterOverlay').className='overlay on';
+}
+function closePayrollMasterModal(){ document.getElementById('payrollMasterOverlay').className='overlay'; }
+function savePayrollMasterEntry() {
+  var data = {
+    UserID: document.getElementById('pmEmployee').value,
+    MonthlyCTC: document.getElementById('pmCTC').value,
+    EffectiveFrom: document.getElementById('pmEffective').value,
+    Notes: document.getElementById('pmNotes').value
+  };
+  if (!data.UserID) { toast('Employee is required.','err'); return; }
+  api({ action:'savePayrollMaster', data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Saved.','ok');
+    closePayrollMasterModal();
+    loadPayrollMaster();
+  });
+}
+
+/* ===================== HR: MONTHLY PAY ===================== */
+function loadPayrollEntries() {
+  var month = document.getElementById('peMonth').value;
+  if (!month) return;
+  api({ action:'getPayrollEntries', month: month }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    var rows = res.entries||[];
+    var body = document.getElementById('peBody');
+    body.innerHTML = rows.length ? rows.map(function(r){
+      return '<tr><td>'+nc(r.EmployeeName,r.UserID)+'</td><td>'+r.Month+'</td><td class="amt">'+fmtA(r.BasicPay)+'</td><td class="amt">'+fmtA(r.Allowances)+'</td><td class="amt">'+fmtA(r.Deductions)+'</td><td class="amt">'+fmtA(r.NetPay)+'</td></tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">No pay logged for this month yet.</div></td></tr>';
+  });
+}
+function openPayrollEntryModal() {
+  loadUserOptions(function(){ fillUserSelect(document.getElementById('peEmployee'), 'Select employee', ['EMPLOYEE','MANAGER','BU_HEAD','MANAGEMENT']); });
+  document.getElementById('peEntryMonth').value = document.getElementById('peMonth').value || new Date().toISOString().slice(0,7);
+  document.getElementById('peBasic').value=''; document.getElementById('peAllowances').value=''; document.getElementById('peDeductions').value='';
+  document.getElementById('payrollEntryOverlay').className='overlay on';
+}
+function closePayrollEntryModal(){ document.getElementById('payrollEntryOverlay').className='overlay'; }
+function savePayrollEntryForm() {
+  var data = {
+    UserID: document.getElementById('peEmployee').value,
+    Month: document.getElementById('peEntryMonth').value,
+    BasicPay: document.getElementById('peBasic').value,
+    Allowances: document.getElementById('peAllowances').value,
+    Deductions: document.getElementById('peDeductions').value
+  };
+  if (!data.UserID || !data.Month) { toast('Employee and month are required.','err'); return; }
+  api({ action:'savePayrollEntry', data: JSON.stringify(data) }, function(res){
+    if (res.error) { toast(res.error,'err'); return; }
+    toast('Pay logged. Net pay: '+fmtA(res.netPay),'ok');
+    closePayrollEntryModal();
+    loadPayrollEntries();
+  });
+}
+
+/* ===================== INSIGHTS ===================== */
+var insCurCategory = 'financial';
+var insChartInstances = {};
+function insChart(canvasId, config) {
+  var el = document.getElementById(canvasId);
+  if (!el) return;
+  if (insChartInstances[canvasId]) { insChartInstances[canvasId].destroy(); }
+  insChartInstances[canvasId] = new Chart(el.getContext('2d'), config);
+}
+var CHART_COLORS = ['#1a1a2e','#c9a84c','#4a4a8a','#0a5c36','#8b1a1a','#7a4f00','#5b21b6','#0369a1','#be185d','#065f46'];
+
+var INSIGHTS_TABS = {
+  financial:          {icon:'💰', label:'Financial Overview',        roles:['MANAGEMENT','BU_HEAD','ADMIN','FINANCE']},
+  portfolio:          {icon:'🗂️', label:'Project Portfolio',        roles:['MANAGEMENT','BU_HEAD','ADMIN']},
+  buCompare:          {icon:'🏢', label:'BU & Customer Comparison',  roles:['MANAGEMENT','BU_HEAD','ADMIN']},
+  workforce:          {icon:'👥', label:'Workforce & Utilization',   roles:['MANAGEMENT','BU_HEAD','ADMIN','HR']},
+  timesheetAnalytics: {icon:'⏱️', label:'Timesheet Analytics',      roles:['MANAGEMENT','BU_HEAD','ADMIN']},
+  costInvoicing:      {icon:'💵', label:'Cost & Invoicing',          roles:['MANAGEMENT','BU_HEAD','ADMIN','FINANCE']},
+  hrPayroll:          {icon:'🪪', label:'HR & Payroll',              roles:['MANAGEMENT','ADMIN','HR']}
+};
+function insInit() {
+  var bar = document.getElementById('insTabBar');
+  var keys = Object.keys(INSIGHTS_TABS).filter(function(k){ return INSIGHTS_TABS[k].roles.indexOf(sess.role)!==-1; });
+  bar.innerHTML = keys.map(function(k,i){ return '<button class="tbb'+(i===0?' on':'')+'" onclick="insSetCategory(\''+k+'\',this)">'+INSIGHTS_TABS[k].icon+' '+INSIGHTS_TABS[k].label+'</button>'; }).join('');
+  if (keys.length) insSetCategory(keys[0], bar.querySelector('.tbb'));
+  else document.getElementById('insContent').innerHTML = '<div class="empty">No insights available for your role.</div>';
+}
+function insSetCategory(cat, btn) {
+  insCurCategory = cat;
+  document.querySelectorAll('#insTabBar .tbb').forEach(function(b){ b.className='tbb'; });
+  if (btn) btn.className = 'tbb on';
+  document.getElementById('insContent').innerHTML = '<div class="empty">Loading...</div>';
+  if (cat==='financial') insLoadFinancial();
+  else if (cat==='portfolio') insLoadPortfolio();
+  else if (cat==='buCompare') insLoadBUCompare();
+  else if (cat==='workforce') insLoadWorkforce();
+  else if (cat==='timesheetAnalytics') insLoadTimesheetAnalytics();
+  else if (cat==='costInvoicing') insLoadCostInvoicing();
+  else if (cat==='hrPayroll') insLoadHRPayroll();
+}
+
+function insLoadFinancial() {
+  api({ action:'getInsights', category:'financial' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+(s.money?fmtA(s.value):s.value)+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Budget vs Actual Cost by BU</div><canvas id="insChartBUCost" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Labor vs Other Cost</div><canvas id="insChartCostSplit" height="220"></canvas></div>'+
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      '<div class="tc"><div class="th2"><div class="th2-title">Top 5 Projects by Margin</div></div><div class="tw"><table><thead><tr><th>Project</th><th>Margin</th><th>Margin %</th></tr></thead><tbody>'+
+      (res.top5.length ? res.top5.map(function(p){ return '<tr><td>'+p.ProjectName+'</td><td class="amt sv green" style="font-size:13px">'+fmtA(p.Margin)+'</td><td>'+p.MarginPct+'%</td></tr>'; }).join('') : '<tr><td colspan="3"><div class="empty">No data.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '<div class="tc"><div class="th2"><div class="th2-title">Bottom 5 Projects by Margin</div></div><div class="tw"><table><thead><tr><th>Project</th><th>Margin</th><th>Margin %</th></tr></thead><tbody>'+
+      (res.bottom5.length ? res.bottom5.map(function(p){ return '<tr><td>'+p.ProjectName+'</td><td class="amt sv '+(p.Margin<0?'red':'green')+'" style="font-size:13px">'+fmtA(p.Margin)+'</td><td>'+p.MarginPct+'%</td></tr>'; }).join('') : '<tr><td colspan="3"><div class="empty">No data.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartBUCost', { type:'bar', data:{
+      labels: res.byBU.map(function(b){return b.BU;}),
+      datasets:[
+        { label:'Budget Cost', data: res.byBU.map(function(b){return b.cost;}), backgroundColor:'#c9a84c' },
+        { label:'Actual Cost', data: res.byBU.map(function(b){return b.actualCost;}), backgroundColor:'#1a1a2e' }
+      ]}, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+    insChart('insChartCostSplit', { type:'doughnut', data:{
+      labels:['Labor Cost','Other Cost'],
+      datasets:[{ data:[res.costSplit.labor, res.costSplit.other], backgroundColor:['#1a1a2e','#c9a84c'] }]
+      }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+  });
+}
+
+function insLoadPortfolio() {
+  api({ action:'getInsights', category:'portfolio' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+s.value+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Projects by Status</div><canvas id="insChartStatus" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Projects by BU</div><canvas id="insChartPortBU" height="220"></canvas></div>'+
+      '</div>';
+    function miniTable(title, rows, cols) {
+      if (!rows.length) return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="empty">Nothing here.</div></div>';
+      var head = cols.map(function(c){return '<th>'+c.label+'</th>';}).join('');
+      var body = rows.map(function(r){ return '<tr>'+cols.map(function(c){return '<td>'+(c.fmt?c.fmt(r[c.key]):(r[c.key]!==undefined?r[c.key]:'-'))+'</td>';}).join('')+'</tr>'; }).join('');
+      return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    }
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('Ending in Next 30 Days', res.endingSoon, [{key:'ProjectName',label:'Project'},{key:'EndDate',label:'End Date',fmt:fmtD},{key:'BU',label:'BU'}]) +
+      miniTable('Overdue (Active, Past End Date)', res.overdue, [{key:'ProjectName',label:'Project'},{key:'EndDate',label:'End Date',fmt:fmtD},{key:'BU',label:'BU'}]) +
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('Stalled (No Activity in 14+ Days)', res.stalled, [{key:'ProjectName',label:'Project'},{key:'BU',label:'BU'},{key:'Status',label:'Status'}]) +
+      miniTable('Avg Duration by BU (days)', res.avgDurationByBU, [{key:'BU',label:'BU'},{key:'avgDays',label:'Avg Days'}]) +
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('Top Over-Budget (Hours)', res.topOverBudgetHours, [{key:'ProjectName',label:'Project'},{key:'BudgetHours',label:'Budget Hrs'},{key:'ActualHours',label:'Actual Hrs'},{key:'Variance',label:'Variance'}]) +
+      miniTable('Most Revised Projects', res.topRevisions, [{key:'ProjectName',label:'Project'},{key:'Revisions',label:'Revisions'}]) +
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartStatus', { type:'doughnut', data:{
+      labels: res.byStatus.map(function(s){return s.Status;}),
+      datasets:[{ data: res.byStatus.map(function(s){return s.Count;}), backgroundColor: CHART_COLORS }]
+      }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+    insChart('insChartPortBU', { type:'bar', data:{
+      labels: res.byBU.map(function(b){return b.BU;}),
+      datasets:[{ label:'Projects', data: res.byBU.map(function(b){return b.Count;}), backgroundColor:'#4a4a8a' }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+  });
+}
+
+function insLoadBUCompare() {
+  api({ action:'getInsights', category:'buCompare' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">'+
+      '<div class="sc"><div class="sl">Business Units</div><div class="sv">'+res.buList.length+'</div></div>'+
+      '<div class="sc"><div class="sl">Customers (Top 10 shown)</div><div class="sv">'+res.customerList.length+'</div></div>'+
+      '<div class="sc"><div class="sl">Repeat Customers</div><div class="sv green">'+res.repeatCustomers+'</div></div>'+
+      '<div class="sc"><div class="sl">One-off Customers</div><div class="sv">'+res.oneOffCustomers+'</div></div>'+
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Revenue by BU</div><canvas id="insChartBURev" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Margin % by BU</div><canvas id="insChartBUMargin" height="220"></canvas></div>'+
+      '</div>';
+    html += '<div class="tc" style="margin-top:14px"><div class="th2"><div class="th2-title">BU Leaderboard</div></div><div class="tw"><table><thead><tr><th>BU</th><th>Revenue</th><th>Budget Cost</th><th>Actual Cost</th><th>Margin %</th><th>Budget Utilization %</th><th>Headcount</th><th>Projects</th></tr></thead><tbody>'+
+      (res.buList.length ? res.buList.map(function(b){
+        return '<tr><td>'+b.BU+'</td><td class="amt">'+fmtA(b.revenue)+'</td><td class="amt">'+fmtA(b.cost)+'</td><td class="amt">'+fmtA(b.actualCost)+'</td><td>'+b.marginPct+'%</td><td>'+b.budgetUtilizationPct+'%</td><td>'+b.headcount+'</td><td>'+b.count+'</td></tr>';
+      }).join('') : '<tr><td colspan="8"><div class="empty">No data.</div></td></tr>')+
+      '</tbody></table></div></div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      '<div class="tc"><div class="th2"><div class="th2-title">Top Customers by Revenue</div></div><div class="tw"><table><thead><tr><th>Customer</th><th>Revenue</th><th>Projects</th></tr></thead><tbody>'+
+      (res.customerList.length ? res.customerList.map(function(c){ return '<tr><td>'+c.Customer+'</td><td class="amt">'+fmtA(c.revenue)+'</td><td>'+c.count+'</td></tr>'; }).join('') : '<tr><td colspan="3"><div class="empty">No data.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Revenue by Industry</div><canvas id="insChartIndustry" height="220"></canvas></div>'+
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartBURev', { type:'bar', data:{
+      labels: res.buList.map(function(b){return b.BU;}),
+      datasets:[{ label:'Revenue', data: res.buList.map(function(b){return b.revenue;}), backgroundColor:'#c9a84c' }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+    insChart('insChartBUMargin', { type:'bar', data:{
+      labels: res.buList.map(function(b){return b.BU;}),
+      datasets:[{ label:'Margin %', data: res.buList.map(function(b){return b.marginPct;}), backgroundColor:'#0a5c36' }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+    if (res.byIndustry.length) {
+      insChart('insChartIndustry', { type:'doughnut', data:{
+        labels: res.byIndustry.map(function(i){return i.Industry;}),
+        datasets:[{ data: res.byIndustry.map(function(i){return i.Revenue;}), backgroundColor: CHART_COLORS }]
+        }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+      });
+    } else {
+      document.getElementById('insChartIndustry').parentElement.innerHTML = '<div class="th2-title" style="margin-bottom:10px">Revenue by Industry</div><div class="empty">No Industry data recorded on projects yet.</div>';
+    }
+  });
+}
+
+function insLoadWorkforce() {
+  api({ action:'getInsights', category:'workforce' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+s.value+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Headcount by Role</div><canvas id="insChartRole" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Headcount by BU</div><canvas id="insChartWfBU" height="220"></canvas></div>'+
+      '</div>';
+    function miniTable(title, rows, cols) {
+      if (!rows.length) return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="empty">Nothing here.</div></div>';
+      var head = cols.map(function(c){return '<th>'+c.label+'</th>';}).join('');
+      var body = rows.map(function(r){ return '<tr>'+cols.map(function(c){return '<td>'+(c.key==='Name'?ncLink(r.Name,null,r.UserID):(r[c.key]!==undefined?r[c.key]:'-'))+'</td>';}).join('')+'</tr>'; }).join('');
+      return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    }
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('On Bench (14+ Days Idle)', res.bench, [{key:'Name',label:'Name'},{key:'Role',label:'Role'},{key:'LastActivity',label:'Last Activity'}]) +
+      miniTable('Top Utilized This Month', res.topUtilized, [{key:'Name',label:'Name'},{key:'Role',label:'Role'},{key:'HoursThisMonth',label:'Hours'}]) +
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('Under-Utilized This Month', res.underUtilized, [{key:'Name',label:'Name'},{key:'Role',label:'Role'},{key:'HoursThisMonth',label:'Hours'}]) +
+      miniTable('Manager Span of Control', res.managerSpan, [{key:'ManagerName',label:'Manager'},{key:'Reports',label:'Direct Reports'}]) +
+      '</div>';
+    html += '<div style="margin-top:14px">' + miniTable('On Multiple Projects', res.multiProject, [{key:'Name',label:'Name'},{key:'ProjectCount',label:'Projects'}]) + '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartRole', { type:'doughnut', data:{
+      labels: res.byRole.map(function(r){return r.Role;}),
+      datasets:[{ data: res.byRole.map(function(r){return r.Count;}), backgroundColor: CHART_COLORS }]
+      }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+    insChart('insChartWfBU', { type:'bar', data:{
+      labels: res.byBU.map(function(b){return b.BU;}),
+      datasets:[{ label:'Headcount', data: res.byBU.map(function(b){return b.Count;}), backgroundColor:'#4a4a8a' }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+  });
+}
+
+function insLoadTimesheetAnalytics() {
+  api({ action:'getInsights', category:'timesheetAnalytics' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+s.value+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="tc" style="margin-top:4px;padding:16px"><div class="th2-title" style="margin-bottom:10px">Daily Hours Logged (Last 30 Days)</div><canvas id="insChartDailyTrend" height="90"></canvas></div>';
+    html += '<div class="fg fg2" style="margin-top:14px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Project vs Other Activity Hours</div><canvas id="insChartProjVsAct" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Activity Type Breakdown</div><canvas id="insChartActType" height="220"></canvas></div>'+
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Pending Entries by Age</div><canvas id="insChartAge" height="220"></canvas></div>'+
+      '<div class="tc"><div class="th2"><div class="th2-title">Approval Backlog by Approver</div></div><div class="tw"><table><thead><tr><th>Approver</th><th>Pending</th></tr></thead><tbody>'+
+      (res.backlogByApprover.length ? res.backlogByApprover.map(function(b){ return '<tr><td>'+b.ApproverName+'</td><td>'+b.Pending+'</td></tr>'; }).join('') : '<tr><td colspan="2"><div class="empty">No pending entries.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartDailyTrend', { type:'line', data:{
+      labels: res.dailyTrend.labels.map(function(d){return d.slice(5);}),
+      datasets:[{ label:'Hours', data: res.dailyTrend.values, borderColor:'#1a1a2e', backgroundColor:'rgba(26,26,46,0.08)', fill:true, tension:0.3 }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+    insChart('insChartProjVsAct', { type:'doughnut', data:{
+      labels:['Project Hours','Other Activity Hours'],
+      datasets:[{ data:[res.projectVsActivity.project, res.projectVsActivity.activity], backgroundColor:['#1a1a2e','#c9a84c'] }]
+      }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+    insChart('insChartActType', { type:'bar', data:{
+      labels: res.activityTypeBreakdown.map(function(a){return a.ActivityType;}),
+      datasets:[{ label:'Hours', data: res.activityTypeBreakdown.map(function(a){return a.Hours;}), backgroundColor:'#7a4f00' }]
+      }, options:{ responsive:true, indexAxis:'y', plugins:{legend:{display:false}} }
+    });
+    insChart('insChartAge', { type:'bar', data:{
+      labels: res.ageBuckets.map(function(a){return a.Bucket;}),
+      datasets:[{ label:'Entries', data: res.ageBuckets.map(function(a){return a.Count;}), backgroundColor:['#0a5c36','#7a4f00','#8b1a1a'] }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+  });
+}
+
+function insLoadCostInvoicing() {
+  api({ action:'getInsights', category:'costInvoicing' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+(s.money?fmtA(s.value):s.value)+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Invoicing Funnel (Not Raised → Raised → Received)</div><canvas id="insChartFunnel" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Invoiced vs Received — Last 6 Months</div><canvas id="insChartInvTrend" height="220"></canvas></div>'+
+      '</div>';
+    html += '<div class="tc" style="margin-top:14px"><div class="th2"><div class="th2-title">Overdue (Not Raised, Past Scheduled Date)</div></div><div class="tw"><table><thead><tr><th>Project</th><th>Sched. Date</th><th>Amount</th></tr></thead><tbody>'+
+      (res.overdue.length ? res.overdue.map(function(r){ return '<tr><td>'+r.ProjectName+'</td><td>'+fmtD(r.SchedDate)+'</td><td class="amt">'+fmtA(r.Amount)+'</td></tr>'; }).join('') : '<tr><td colspan="3"><div class="empty">None — nice.</div></td></tr>')+
+      '</tbody></table></div></div>';
+    html += '<div class="fg fg2" style="margin-top:14px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Approved Costs by Category</div><canvas id="insChartCostCat" height="220"></canvas></div>'+
+      '<div class="tc"><div class="th2"><div class="th2-title">Approved Costs by BU</div></div><div class="tw"><table><thead><tr><th>BU</th><th>Amount</th></tr></thead><tbody>'+
+      (res.costByBU.length ? res.costByBU.map(function(b){ return '<tr><td>'+b.BU+'</td><td class="amt">'+fmtA(b.Amount)+'</td></tr>'; }).join('') : '<tr><td colspan="2"><div class="empty">No approved costs yet.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartFunnel', { type:'bar', data:{
+      labels: res.funnel.map(function(f){return f.Status;}),
+      datasets:[{ label:'Amount', data: res.funnel.map(function(f){return f.Amount;}), backgroundColor:['#4a4a8a','#c9a84c','#0a5c36'] }]
+      }, options:{ responsive:true, indexAxis:'y', plugins:{legend:{display:false}} }
+    });
+    insChart('insChartInvTrend', { type:'line', data:{
+      labels: res.monthlyTrend.labels,
+      datasets:[
+        { label:'Invoiced', data: res.monthlyTrend.invoiced, borderColor:'#c9a84c', backgroundColor:'rgba(201,168,76,0.1)', fill:true, tension:0.3 },
+        { label:'Received', data: res.monthlyTrend.received, borderColor:'#0a5c36', backgroundColor:'rgba(10,92,54,0.1)', fill:true, tension:0.3 }
+      ]}, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+    });
+    if (res.costByCategory.length) {
+      insChart('insChartCostCat', { type:'doughnut', data:{
+        labels: res.costByCategory.map(function(c){return c.Category;}),
+        datasets:[{ data: res.costByCategory.map(function(c){return c.Amount;}), backgroundColor: CHART_COLORS }]
+        }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+      });
+    } else {
+      document.getElementById('insChartCostCat').parentElement.innerHTML = '<div class="th2-title" style="margin-bottom:10px">Approved Costs by Category</div><div class="empty">No approved cost entries yet.</div>';
+    }
+  });
+}
+
+function insLoadHRPayroll() {
+  api({ action:'getInsights', category:'hrPayroll' }, function(res){
+    if (res.error) { document.getElementById('insContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+(s.money?fmtA(s.value):s.value)+'</div></div>';
+    }).join('') + '</div>';
+    html += '<div class="fg fg2" style="margin-top:4px;align-items:stretch">'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Payroll Cost — Last 6 Months</div><canvas id="insChartPayrollTrend" height="220"></canvas></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">Avg CTC by Role</div><canvas id="insChartCTCRole" height="220"></canvas></div>'+
+      '</div>';
+    function miniTable(title, rows, cols) {
+      if (!rows.length) return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="empty">Nothing here.</div></div>';
+      var head = cols.map(function(c){return '<th>'+c.label+'</th>';}).join('');
+      var body = rows.map(function(r){ return '<tr>'+cols.map(function(c){return '<td>'+(c.key==='Name'?ncLink(r.Name,null,r.UserID):(c.money?fmtA(r[c.key]):r[c.key]))+'</td>';}).join('')+'</tr>'; }).join('');
+      return '<div class="tc"><div class="th2"><div class="th2-title">'+title+'</div></div><div class="tw"><table><thead><tr>'+head+'</tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    }
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('Top 5 by CTC', res.topCTC, [{key:'Name',label:'Employee'},{key:'Role',label:'Role'},{key:'CTC',label:'Monthly CTC',money:true}]) +
+      miniTable('Pending This Month', res.pendingThisMonth, [{key:'Name',label:'Employee'},{key:'Role',label:'Role'}]) +
+      '</div>';
+    html += '<div class="fg fg2" style="margin-top:14px">'+
+      miniTable('No Payroll Master Record', res.noPayrollMaster, [{key:'Name',label:'Employee'},{key:'Role',label:'Role'}]) +
+      miniTable('New Hires Needing Payroll Setup', res.newHiresNeedingSetup, [{key:'Name',label:'Employee'},{key:'Role',label:'Role'}]) +
+      '</div>';
+    html += '<div class="sg" style="margin-top:14px">'+
+      '<div class="sc"><div class="sl">Avg Allowances (% of Basic)</div><div class="sv">'+res.avgAllowancePct+'%</div></div>'+
+      '<div class="sc"><div class="sl">Avg Deductions (% of Basic)</div><div class="sv">'+res.avgDeductionPct+'%</div></div>'+
+      '</div>';
+    document.getElementById('insContent').innerHTML = html;
+
+    insChart('insChartPayrollTrend', { type:'line', data:{
+      labels: res.monthlyTrend.labels,
+      datasets:[{ label:'Payroll Cost', data: res.monthlyTrend.values, borderColor:'#1a1a2e', backgroundColor:'rgba(26,26,46,0.08)', fill:true, tension:0.3 }]
+      }, options:{ responsive:true, plugins:{legend:{display:false}} }
+    });
+    if (res.avgCTCByRole.length) {
+      insChart('insChartCTCRole', { type:'bar', data:{
+        labels: res.avgCTCByRole.map(function(r){return r.Role;}),
+        datasets:[{ label:'Avg CTC', data: res.avgCTCByRole.map(function(r){return r.AvgCTC;}), backgroundColor:'#7a4f00' }]
+        }, options:{ responsive:true, plugins:{legend:{display:false}} }
+      });
+    } else {
+      document.getElementById('insChartCTCRole').parentElement.innerHTML = '<div class="th2-title" style="margin-bottom:10px">Avg CTC by Role</div><div class="empty">No Payroll Master records yet.</div>';
+    }
+  });
+}
+
+/* ===================== MY INSIGHTS (Employee / Manager) ===================== */
+function insLoadPersonal() {
+  document.getElementById('miContent').innerHTML = '<div class="empty">Loading...</div>';
+  api({ action:'getInsights', category:'personal' }, function(res){
+    if (res.error) { document.getElementById('miContent').innerHTML='<div class="empty">'+res.error+'</div>'; return; }
+    var html = '<div class="sg">' + res.stats.map(function(s){
+      return '<div class="sc"><div class="sl">'+s.label+'</div><div class="sv">'+s.value+'</div></div>';
+    }).join('') + '</div>';
+
+    if (res.kpis.length) {
+      html += '<div class="tc" style="margin-top:14px"><div class="th2"><div class="th2-title">My KPIs</div></div><div style="padding:14px 18px">'+
+        res.kpis.map(function(k){
+          var pct = k.TargetValue ? Math.min(100, Math.round((Number(k.ActualValue)||0)/Number(k.TargetValue)*100)) : 0;
+          return '<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px"><span>'+k.KPIName+' ('+k.Period+')</span><span>'+(k.ActualValue||0)+' / '+k.TargetValue+' '+(k.Unit||'')+'</span></div><div class="prog"><i style="width:'+pct+'%"></i></div></div>';
+        }).join('') + '</div></div>';
+    }
+
+    html += '<div class="fg fg2" style="margin-top:14px;align-items:stretch">'+
+      '<div class="tc"><div class="th2"><div class="th2-title">My Projects (Approved Hours)</div></div><div class="tw"><table><thead><tr><th>Project</th><th>Hours</th></tr></thead><tbody>'+
+      (res.myProjects.length ? res.myProjects.map(function(p){ return '<tr><td>'+p.ProjectName+'</td><td>'+p.Hours+'</td></tr>'; }).join('') : '<tr><td colspan="2"><div class="empty">No approved hours yet.</div></td></tr>')+
+      '</tbody></table></div></div>'+
+      '<div class="tc" style="padding:16px"><div class="th2-title" style="margin-bottom:10px">My Time by Activity Type</div><canvas id="insChartMyActivity" height="220"></canvas></div>'+
+      '</div>';
+
+    if (res.team) {
+      html += '<div class="tc" style="margin-top:14px"><div class="th2"><div class="th2-title">My Team</div></div><div class="sg" style="padding:14px 18px">'+
+        '<div class="sc"><div class="sl">Team Size</div><div class="sv">'+res.team.size+'</div></div>'+
+        '<div class="sc"><div class="sl">Team Hours This Week</div><div class="sv">'+res.team.hoursThisWeek+'</div></div>'+
+        '<div class="sc"><div class="sl">Pending Approvals</div><div class="sv amber">'+res.team.pendingApprovals+'</div></div>'+
+        '<div class="sc"><div class="sl">Team KPIs Set</div><div class="sv">'+res.team.kpiCount+'</div></div>'+
+        '</div><div style="padding:0 18px 16px"><canvas id="insChartTeamHours" height="200"></canvas></div></div>';
+    }
+    document.getElementById('miContent').innerHTML = html;
+
+    if (res.activityBreakdown.length) {
+      insChart('insChartMyActivity', { type:'doughnut', data:{
+        labels: res.activityBreakdown.map(function(a){return a.ActivityType;}),
+        datasets:[{ data: res.activityBreakdown.map(function(a){return a.Hours;}), backgroundColor: CHART_COLORS }]
+        }, options:{ responsive:true, plugins:{legend:{position:'bottom'}} }
+      });
+    } else {
+      document.getElementById('insChartMyActivity').parentElement.innerHTML = '<div class="th2-title" style="margin-bottom:10px">My Time by Activity Type</div><div class="empty">No non-project activity logged yet.</div>';
+    }
+    if (res.team) {
+      insChart('insChartTeamHours', { type:'bar', data:{
+        labels: res.team.comparison.map(function(t){return t.Name;}),
+        datasets:[{ label:'Approved Hours', data: res.team.comparison.map(function(t){return t.Hours;}), backgroundColor:'#4a4a8a' }]
+        }, options:{ responsive:true, plugins:{legend:{display:false}} }
+      });
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
